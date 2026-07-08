@@ -1,3 +1,5 @@
+import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
+
 export default function Contact() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
@@ -16,8 +18,9 @@ export default function Contact() {
           'Brackenbury Health Clinic — Hammersmith',
           'Wholistic Wellness Clinic'
         ].map((loc) => (
-          <div key={loc} className="bg-cream border border-moss/10 rounded-lg p-5 text-sm text-ink/80">
-            {loc}
+          <div key={loc} className="bg-cream border border-moss/10 rounded-lg overflow-hidden">
+            <ImagePlaceholder className="aspect-[16/9]" label="" tone="linen" />
+            <div className="p-4 text-sm text-ink/80">{loc}</div>
           </div>
         ))}
       </div>

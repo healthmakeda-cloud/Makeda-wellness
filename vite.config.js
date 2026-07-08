@@ -9,11 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/favicon.svg'],
       manifest: {
-        name: 'Makeda — Herbal Medicine & Colon Hydrotherapy',
-        short_name: 'Makeda',
-        description: 'Herbal medicine, colon hydrotherapy and gut health support with Makeda Hemans.',
-        theme_color: '#2B3A2A',
-        background_color: '#EDE7D9',
+        name: 'Makéda Health — Herbal Medicine & Colon Hydrotherapy',
+        short_name: 'Makéda Health',
+        description: 'Herbal medicine, colon hydrotherapy and gut health support with Makéda Health.',
+        theme_color: '#2A1E42',
+        background_color: '#F5F0E6',
         display: 'standalone',
         start_url: '/',
         icons: [

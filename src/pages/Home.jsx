@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import RootMark from '../components/RootMark.jsx'
 import RootDivider from '../components/RootDivider.jsx'
+import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
 
 const services = [
   {
@@ -55,6 +56,10 @@ export default function Home() {
         </div>
       </section>
 
+      <div className="max-w-6xl mx-auto px-6">
+        <ImagePlaceholder className="aspect-[21/9]" label="Clinic / treatment photography coming soon" />
+      </div>
+
       <RootDivider />
 
       <section className="max-w-6xl mx-auto px-6 py-16">
@@ -62,6 +67,7 @@ export default function Home() {
         <div className="grid sm:grid-cols-2 gap-6">
           {services.map((s) => (
             <div key={s.title} className="bg-cream border border-moss/10 rounded-xl p-6">
+              <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" />
               <h3 className="font-display text-lg text-moss mb-2">{s.title}</h3>
               <p className="text-sm text-ink/70">{s.copy}</p>
             </div>

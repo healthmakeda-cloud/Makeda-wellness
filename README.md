@@ -1,41 +1,69 @@
-# Makeda — Wellness PWA (foundation build)
+# Makéda Health — Wellness PWA
 
-React + Vite PWA foundation for Makeda Hemans' herbal medicine & colon hydrotherapy practice.
+React + Vite PWA for Makéda Health — herbal medicine & colon hydrotherapy.
 
-## What's in this phase
-- Home, About, Services, Contact — content scaffolded from makedah.com, marked with
-  `[Replace with...]` placeholders wherever real copy/testimonials/consent text needs to be dropped in
-- Client intake — 3-step form (health history → hydrotherapy consent & contraindications → review/submit)
-- Members and Vlog — quiet "opening soon" placeholders, nav-ready for the next build phase
-- PWA manifest + service worker + icons (installable on iOS/Android/desktop)
-- Logo mark (root/branch monoline, forms an "M") used as favicon, app icon, and in nav/footer
+## What's new in this version
+- **Client intake form** rebuilt around Makéda's real paper forms (contact & GP details,
+  categorised health history with contraindication flags, women's health, bowel/diet,
+  consent & signature) — submits straight to a Supabase database instead of the browser
+- **Back office** at `/admin` — password-protected staff page to review submissions and
+  export everything to CSV
+- Indigo / terracotta / cream palette matching Makéda Health's existing brand
+- Photo placeholders on Home, About and Contact, ready to swap for real photography
 
-## ⚠️ Before this collects real client data
-The intake form currently saves submissions to **localStorage** (client's own browser) so the flow can
-be demoed end-to-end. That is **not sufficient for real health data** — under UK GDPR, health history and
-consent forms are "special category data" and need:
-- A real backend (Supabase, matching your other projects, works well here) with encryption at rest
-- Access controls so only Makeda/authorised staff can read submissions
-- A proper privacy notice and data retention policy on the form itself
+## One-time setup: Supabase (the database)
 
-Swap the `localStorage` calls in `src/pages/ClientIntake.jsx` (`handleSubmit`) for a Supabase insert once
-that's wired up — the form state shape is already flat and ready to map to a table.
+1. Go to [supabase.com](https://supabase.com), sign up/log in, click **New project**
+   (do this under Makéda's own account/organisation, since this will hold real client
+   health data — not mixed in with your other projects)
+2. Once it's created, open the **SQL Editor** (left sidebar) → **New query**
+3. Open `supabase/schema.sql` in this project, copy the whole thing, paste it into the
+   SQL editor, and click **Run**. This creates the `intake_submissions` table and locks
+   it down so the public website can only ever *add* a submission, never read one back.
+4. Go to **Project Settings → API**. You'll need three values from this page in the next step:
+   - **Project URL**
+   - **anon public** key
+   - **service_role** key (this one is secret — never put it in the website code or a
+     public repo; it only ever goes into Vercel's environment variables, see below)
+
+## One-time setup: environment variables in Vercel
+
+In your Vercel project → **Settings → Environment Variables**, add:
+
+| Name | Value | Notes |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Project URL | Public — used by the intake form |
+| `VITE_SUPABASE_ANON_KEY` | anon public key | Public — used by the intake form |
+| `SUPABASE_URL` | Project URL | Server-only — used by `/api` |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key | **Secret** — server-only, used by `/api` |
+| `ADMIN_PASSWORD` | a password you choose | Gate for the `/admin` back office |
+
+After adding these, redeploy (Vercel → Deployments → ⋯ → Redeploy) so the new build picks
+them up.
+
+## Using the back office
+
+Visit `yoursite.vercel.app/admin`, sign in with the `ADMIN_PASSWORD` you set above. From
+there you can browse every intake submission (anything with a flagged contraindication is
+marked), open one for full detail, or click **Export all to CSV** to download everything
+as a spreadsheet.
+
+This page isn't linked from the site's navigation on purpose — bookmark the URL.
 
 ## Local development
 ```
 npm install
+cp .env.example .env.local   # then fill in the VITE_ values
 npm run dev
 ```
 
-## Deploy (Vercel, under soulart2024-ship-it)
-1. Create a new repo, e.g. `soulart2024-ship-it/makeda-wellness`
-2. `git init && git add . && git commit -m "Foundation build" && git remote add origin <repo-url> && git push -u origin main`
-3. Import the repo in Vercel — framework preset auto-detects as Vite, no config needed
-   (build command `npm run build`, output directory `dist`)
-4. Add a custom domain once ready
+## Deploy (Vercel)
+Framework preset auto-detects as Vite — build command `npm run build`, output directory
+`dist`. The `/api` folder deploys automatically as serverless functions, no extra config.
 
-## Next build phases
-- Shop (gut test kits, Stripe — same pattern as Heather & Rose / SoulArt Temple)
-- Members area with real auth + tiers
-- Vlog/video content system
-- Swap AI-generated imagery for Makeda's real photography as it comes in
+## Still to do
+- Shop (gut test kits, Stripe)
+- Members area with real client login (session notes, ongoing plans)
+- Vlog/video content
+- Swap AI-generated/placeholder imagery for real photography
+- Confirm Makéda's legal surname for the About page (currently just "Makéda")

@@ -8,6 +8,7 @@ import ClientIntake from './pages/ClientIntake.jsx'
 import Contact from './pages/Contact.jsx'
 import Members from './pages/Members.jsx'
 import Vlog from './pages/Vlog.jsx'
+import Admin from './pages/Admin.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/members" element={<Members />} />
           <Route path="/vlog" element={<Vlog />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

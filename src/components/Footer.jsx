@@ -5,8 +5,8 @@ export default function Footer() {
     <footer className="bg-moss text-linen mt-32">
       <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-3">
         <div className="flex flex-col gap-3">
-          <RootMark className="h-10 w-10 [&_path]:!stroke-linen [&_ellipse]:!fill-ochre" />
-          <p className="font-display text-lg">makeda</p>
+          <RootMark className="h-10 w-10" variant="dark" />
+          <p className="font-display text-lg">Makéda Health</p>
           <p className="text-sm text-linen/70 max-w-xs">
             Herbal medicine and colon hydrotherapy for the gut, considered as the root of wellbeing.
           </p>
