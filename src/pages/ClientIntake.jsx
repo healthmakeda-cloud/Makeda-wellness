@@ -6,6 +6,10 @@ const cardiovascularFlags = ['Severe cardiac disease', 'High blood pressure', 'S
 const genitourinaryFlags = ['Renal insufficiency / dialysis']
 const gastrointestinalFlags = ['Severe haemorrhoids', 'Colon or rectum cancer', 'Severe liver disease', 'Fistulas or fissures']
 const musculoskeletalFlags = ['Abdominal or inguinal hernia']
+const menopauseSymptomsList = [
+  'Hot flushes', 'Night sweats', 'Dizziness', 'Brain fog', 'Weight gain',
+  'Hair loss', 'Mood changes', 'Sleep disturbance', 'Joint pain', 'Low libido'
+]
 
 const initialForm = {
   firstName: '', surname: '', dob: '', sex: '', address: '', postcode: '',
@@ -20,6 +24,7 @@ const initialForm = {
   musculoskeletalNotes: '', musculoskeletalFlags: [],
   womenPainfulPeriods: false, womenLastPeriodDate: '', womenVaginalDischarge: false,
   womenThrush: false, womenPregnant: false, womenComplicatedPregnancy: false,
+  menopauseStatus: '', menopauseSymptoms: [],
   bowelDaily: false, bowelNumberPerDay: '', bowelDifficulty: false, bowelConsistency: '', bowelFlatulence: false,
   dietVegetarianVegan: false, dietFoodCravings: false, dietFoodCravingsDetail: '',
   dietDailyFluidIntake: '', dietEatingDisorder: false,
@@ -120,6 +125,7 @@ export default function ClientIntake() {
       women_painful_periods: form.womenPainfulPeriods, women_last_period_date: form.womenLastPeriodDate || null,
       women_vaginal_discharge: form.womenVaginalDischarge, women_thrush: form.womenThrush,
       women_pregnant: form.womenPregnant, women_complicated_pregnancy: form.womenComplicatedPregnancy,
+      menopause_status: form.menopauseStatus, menopause_symptoms: form.menopauseSymptoms,
       bowel_daily: form.bowelDaily, bowel_number_per_day: form.bowelNumberPerDay,
       bowel_difficulty: form.bowelDifficulty, bowel_consistency: form.bowelConsistency,
       bowel_flatulence: form.bowelFlatulence,
@@ -253,6 +259,30 @@ export default function ClientIntake() {
                 <input type="checkbox" checked={form.womenComplicatedPregnancy} onChange={(e) => update('womenComplicatedPregnancy', e.target.checked)} />
                 Complicated pregnancy
               </label>
+            </div>
+
+            <RootDivider />
+
+            <div>
+              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">MENOPAUSE</p>
+              <Field label="STATUS">
+                <select className={inputClass} value={form.menopauseStatus} onChange={(e) => update('menopauseStatus', e.target.value)}>
+                  <option value="">Select</option>
+                  <option value="pre">Pre-menopausal</option>
+                  <option value="peri">Peri-menopausal</option>
+                  <option value="post">Post-menopausal</option>
+                  <option value="not-applicable">Not applicable</option>
+                </select>
+              </Field>
+              <p className="font-mono text-xs tracking-wide text-moss/70 mt-4 mb-2">SYMPTOMS — tick any that apply</p>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {menopauseSymptomsList.map((s) => (
+                  <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
+                    <input type="checkbox" checked={form.menopauseSymptoms.includes(s)} onChange={() => toggleFlag('menopauseSymptoms', s)} />
+                    {s}
+                  </label>
+                ))}
+              </div>
             </div>
 
             <RootDivider />

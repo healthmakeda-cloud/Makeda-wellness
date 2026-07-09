@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react'
 
+function Row({ label, value }) {
+  return (
+    <p className="text-sm text-ink/80">
+      <span className="font-mono text-xs text-ochre">{label}</span> — {value === true ? 'Yes' : value === false ? 'No' : (value || '—')}
+    </p>
+  )
+}
+
+function SectionTitle({ children }) {
+  return <p className="font-mono text-xs tracking-widest text-moss/60 mt-5 mb-2 first:mt-0">{children}</p>
+}
+
 export default function Admin() {
   const [password, setPassword] = useState(() => sessionStorage.getItem('makeda_admin_pw') || '')
   const [authed, setAuthed] = useState(false)
@@ -102,19 +114,70 @@ export default function Admin() {
                 <span className="font-mono text-xs text-ochre bg-ochre/10 px-2 py-1 rounded">flagged</span>
               )}
             </button>
+
             {openId === s.id && (
-              <div className="px-5 pb-5 text-sm text-ink/80 space-y-2 border-t border-moss/10 pt-4">
-                <p><span className="font-mono text-xs text-ochre">EMAIL</span> — {s.email}</p>
-                <p><span className="font-mono text-xs text-ochre">MOBILE</span> — {s.mobile}</p>
-                <p><span className="font-mono text-xs text-ochre">DOB</span> — {s.dob}</p>
-                <p><span className="font-mono text-xs text-ochre">AILMENT</span> — {s.description_of_ailment || '—'}</p>
-                <p><span className="font-mono text-xs text-ochre">MEDICATIONS</span> — {s.medications || '—'}</p>
-                <p><span className="font-mono text-xs text-ochre">CARDIOVASCULAR FLAGS</span> — {(s.cardiovascular_flags || []).join(', ') || 'None'}</p>
-                <p><span className="font-mono text-xs text-ochre">GENITOURINARY FLAGS</span> — {(s.genitourinary_flags || []).join(', ') || 'None'}</p>
-                <p><span className="font-mono text-xs text-ochre">GASTROINTESTINAL FLAGS</span> — {(s.gastrointestinal_flags || []).join(', ') || 'None'}</p>
-                <p><span className="font-mono text-xs text-ochre">MUSCULOSKELETAL FLAGS</span> — {(s.musculoskeletal_flags || []).join(', ') || 'None'}</p>
-                <p><span className="font-mono text-xs text-ochre">COMPLICATED PREGNANCY</span> — {s.women_complicated_pregnancy ? 'Yes' : 'No'}</p>
-                <p><span className="font-mono text-xs text-ochre">CONSENT SIGNED</span> — {s.signature || '—'} ({s.signed_date || '—'})</p>
+              <div className="px-5 pb-5 space-y-1 border-t border-moss/10 pt-4">
+
+                <SectionTitle>CONTACT</SectionTitle>
+                <Row label="NAME" value={`${s.first_name || ''} ${s.surname || ''}`} />
+                <Row label="DOB" value={s.dob} />
+                <Row label="SEX" value={s.sex} />
+                <Row label="ADDRESS" value={s.address} />
+                <Row label="POSTCODE" value={s.postcode} />
+                <Row label="EMAIL" value={s.email} />
+                <Row label="MOBILE" value={s.mobile} />
+                <Row label="LANDLINE" value={s.landline} />
+
+                <SectionTitle>GP</SectionTitle>
+                <Row label="GP NAME" value={s.gp_name} />
+                <Row label="GP TEL" value={s.gp_tel} />
+                <Row label="GP ADDRESS" value={s.gp_address} />
+                <Row label="PERMISSION TO CONTACT GP" value={s.gp_contact_consent} />
+
+                <SectionTitle>PRESENTING COMPLAINT</SectionTitle>
+                <Row label="DESCRIPTION OF AILMENT" value={s.description_of_ailment} />
+                <Row label="EXISTING OR NEW" value={s.existing_or_new} />
+                <Row label="MEDICATIONS" value={s.medications} />
+                <Row label="SURGERIES (LAST 3 MONTHS)" value={s.surgeries_last_3_months} />
+
+                <SectionTitle>HEALTH HISTORY BY SYSTEM</SectionTitle>
+                <Row label="RESPIRATORY" value={s.respiratory_notes} />
+                <Row label="CARDIOVASCULAR" value={s.cardiovascular_notes} />
+                <Row label="CARDIOVASCULAR FLAGS" value={(s.cardiovascular_flags || []).join(', ') || 'None'} />
+                <Row label="GENITOURINARY" value={s.genitourinary_notes} />
+                <Row label="GENITOURINARY FLAGS" value={(s.genitourinary_flags || []).join(', ') || 'None'} />
+                <Row label="GASTROINTESTINAL" value={s.gastrointestinal_notes} />
+                <Row label="GASTROINTESTINAL FLAGS" value={(s.gastrointestinal_flags || []).join(', ') || 'None'} />
+                <Row label="DERMATOLOGICAL" value={s.dermatological_notes} />
+                <Row label="MUSCULOSKELETAL" value={s.musculoskeletal_notes} />
+                <Row label="MUSCULOSKELETAL FLAGS" value={(s.musculoskeletal_flags || []).join(', ') || 'None'} />
+
+                <SectionTitle>WOMEN'S HEALTH & MENOPAUSE</SectionTitle>
+                <Row label="PAINFUL PERIODS" value={s.women_painful_periods} />
+                <Row label="LAST PERIOD DATE" value={s.women_last_period_date} />
+                <Row label="VAGINAL DISCHARGE" value={s.women_vaginal_discharge} />
+                <Row label="THRUSH" value={s.women_thrush} />
+                <Row label="PREGNANT" value={s.women_pregnant} />
+                <Row label="COMPLICATED PREGNANCY" value={s.women_complicated_pregnancy} />
+                <Row label="MENOPAUSE STATUS" value={s.menopause_status} />
+                <Row label="MENOPAUSE SYMPTOMS" value={(s.menopause_symptoms || []).join(', ') || 'None'} />
+
+                <SectionTitle>BOWEL & DIET</SectionTitle>
+                <Row label="DAILY BOWEL MOVEMENTS" value={s.bowel_daily} />
+                <Row label="NUMBER PER DAY" value={s.bowel_number_per_day} />
+                <Row label="DIFFICULTY PASSING" value={s.bowel_difficulty} />
+                <Row label="CONSISTENCY" value={s.bowel_consistency} />
+                <Row label="FLATULENCE / BLOATING" value={s.bowel_flatulence} />
+                <Row label="VEGETARIAN / VEGAN" value={s.diet_vegetarian_vegan} />
+                <Row label="FOOD CRAVINGS" value={s.diet_food_cravings} />
+                <Row label="CRAVINGS DETAIL" value={s.diet_food_cravings_detail} />
+                <Row label="DAILY FLUID INTAKE" value={s.diet_daily_fluid_intake} />
+                <Row label="HISTORY OF EATING DISORDER" value={s.diet_eating_disorder} />
+
+                <SectionTitle>CONSENT</SectionTitle>
+                <Row label="CONSENT GIVEN" value={s.consent_given} />
+                <Row label="SIGNATURE" value={s.signature} />
+                <Row label="SIGNED DATE" value={s.signed_date} />
               </div>
             )}
           </div>
