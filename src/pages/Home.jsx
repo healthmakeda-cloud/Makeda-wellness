@@ -57,7 +57,7 @@ export default function Home() {
       </section>
 
       <div className="max-w-6xl mx-auto px-6">
-        <ImagePlaceholder className="aspect-[21/9]" label="Clinic / treatment photography coming soon" />
+        <ImagePlaceholder className="aspect-[21/9]" label="Clinic / treatment photography coming soon" variant="water" />
       </div>
 
       <RootDivider />
@@ -65,9 +65,9 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="font-display text-2xl text-moss mb-10">Ways to work together</h2>
         <div className="grid sm:grid-cols-2 gap-6">
-          {services.map((s) => (
+          {services.map((s, i) => (
             <div key={s.title} className="bg-cream border border-moss/10 rounded-xl p-6">
-              <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" />
+              <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" variant={['herb', 'root', 'berry', 'water'][i % 4]} />
               <h3 className="font-display text-lg text-moss mb-2">{s.title}</h3>
               <p className="text-sm text-ink/70">{s.copy}</p>
             </div>

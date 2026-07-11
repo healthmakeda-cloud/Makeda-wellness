@@ -24,7 +24,7 @@ export default function About() {
             hydrotherapy sessions, herbal prescriptions and guided cleanse programmes.
           </p>
         </div>
-        <ImagePlaceholder className="aspect-[3/4]" label="Portrait coming soon" />
+        <ImagePlaceholder className="aspect-[3/4]" label="Portrait coming soon" variant="root" />
       </div>
 
       <RootDivider />
