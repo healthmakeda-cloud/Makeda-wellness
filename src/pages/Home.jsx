@@ -1,24 +1,27 @@
 import { Link } from 'react-router-dom'
 import RootMark from '../components/RootMark.jsx'
 import RootDivider from '../components/RootDivider.jsx'
-import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
 
 const services = [
   {
     title: 'Colon hydrotherapy',
-    copy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.'
+    copy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.',
+    image: '/images/colon-hydrotherapy.jpg'
   },
   {
     title: 'Herbal medicine',
-    copy: 'Plant-based remedies tailored to your history and constitution, not a one-size prescription.'
+    copy: 'Plant-based remedies tailored to your history and constitution, not a one-size prescription.',
+    image: '/images/herbal-medicine.jpeg'
   },
   {
     title: 'Aromatherapy massage',
-    copy: 'Bodywork and essential oils used to support circulation, stress and recovery alongside your treatment plan.'
+    copy: 'Bodywork and essential oils used to support circulation, stress and recovery alongside your treatment plan.',
+    image: '/images/aromatherapy-massage.jpg'
   },
   {
     title: 'Cleanse programmes',
-    copy: '7, 15 and 30-day guided programmes combining diet, herbs and hydrotherapy sessions.'
+    copy: '7, 15 and 30-day guided programmes combining diet, herbs and hydrotherapy sessions.',
+    image: '/images/cleanse-programmes.jpg'
   }
 ]
 
@@ -57,7 +60,11 @@ export default function Home() {
       </section>
 
       <div className="max-w-6xl mx-auto px-6">
-        <ImagePlaceholder className="aspect-[21/9]" label="Clinic / treatment photography coming soon" variant="water" />
+        <img
+          src="/images/home-banner.jpg"
+          alt="Hands gathering fresh herbs into a bowl, morning light"
+          className="w-full aspect-[21/9] object-cover rounded-xl"
+        />
       </div>
 
       <RootDivider />
@@ -65,9 +72,13 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="font-display text-2xl text-moss mb-10">Ways to work together</h2>
         <div className="grid sm:grid-cols-2 gap-6">
-          {services.map((s, i) => (
+          {services.map((s) => (
             <div key={s.title} className="bg-cream border border-moss/10 rounded-xl p-6">
-              <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" variant={['herb', 'root', 'berry', 'water'][i % 4]} />
+              <img
+                src={s.image}
+                alt={s.title}
+                className="w-full aspect-[16/9] object-cover rounded-lg mb-4"
+              />
               <h3 className="font-display text-lg text-moss mb-2">{s.title}</h3>
               <p className="text-sm text-ink/70">{s.copy}</p>
             </div>

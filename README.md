@@ -41,7 +41,28 @@ In your Vercel project → **Settings → Environment Variables**, add:
 After adding these, redeploy (Vercel → Deployments → ⋯ → Redeploy) so the new build picks
 them up.
 
-## Using the back office
+## One-time setup: Stripe (the shop)
+
+1. Go to [stripe.com](https://stripe.com) and create an account for Makéda's business (or
+   use an existing one, if she already has one from elsewhere)
+2. Once in the dashboard, make sure you're in **Test mode** first (toggle top-right) — test
+   everything before switching to live payments
+3. Go to **Developers → API keys**. Copy the **Secret key** (starts `sk_test_...`)
+4. In Vercel → Settings → Environment Variables, add `STRIPE_SECRET_KEY` with that value
+5. After deploying, go to **Developers → Webhooks → Add endpoint** in Stripe. Set the URL to
+   `https://your-site.vercel.app/api/stripe-webhook`, and select the `checkout.session.completed`
+   event
+6. Stripe will show a **Signing secret** (starts `whsec_...`) — add this to Vercel as
+   `STRIPE_WEBHOOK_SECRET`
+7. Test a purchase using [Stripe's test card numbers](https://stripe.com/docs/testing)
+   (e.g. `4242 4242 4242 4242`, any future expiry, any CVC)
+8. Once everything works, switch Stripe to **Live mode**, generate live API keys, repeat
+   steps 3–6 with the live keys, and update the Vercel environment variables
+
+The product list and prices live in `src/data/products.js` — edit that file and redeploy to
+change what's for sale or update pricing.
+
+
 
 Visit `yoursite.vercel.app/admin`, sign in with the `ADMIN_PASSWORD` you set above. From
 there you can browse every intake submission (anything with a flagged contraindication is
@@ -62,8 +83,8 @@ Framework preset auto-detects as Vite — build command `npm run build`, output 
 `dist`. The `/api` folder deploys automatically as serverless functions, no extra config.
 
 ## Still to do
-- Shop (gut test kits, Stripe)
-- Members area with real client login (session notes, ongoing plans)
-- Vlog/video content
+- AI chat with clients — needs careful scoping first
+- SMS confirmations (Twilio)
+- Messaging & prescriptions in back office
 - Swap AI-generated/placeholder imagery for real photography
 - Confirm Makéda's legal surname for the About page (currently just "Makéda")
