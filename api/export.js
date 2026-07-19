@@ -5,6 +5,7 @@ const columns = [
   'email', 'mobile', 'landline',
   'gp_name', 'gp_tel', 'gp_address', 'gp_postcode', 'gp_contact_consent',
   'description_of_ailment', 'existing_or_new', 'medications', 'surgeries_last_3_months',
+  'services_interested',
   'respiratory_notes',
   'cardiovascular_notes', 'cardiovascular_flags',
   'genitourinary_notes', 'genitourinary_flags',
@@ -19,7 +20,7 @@ const columns = [
   'bowel_daily', 'bowel_number_per_day', 'bowel_difficulty', 'bowel_consistency', 'bowel_flatulence',
   'diet_vegetarian_vegan', 'diet_food_cravings', 'diet_food_cravings_detail',
   'diet_daily_fluid_intake', 'diet_eating_disorder',
-  'consent_given', 'signature', 'signed_date', 'status'
+  'consent_given', 'ch_consent_given', 'signature', 'signed_date', 'status'
 ]
 
 function csvCell(value) {

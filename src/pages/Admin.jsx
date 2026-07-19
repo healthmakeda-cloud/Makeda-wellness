@@ -158,6 +158,7 @@ export default function Admin() {
                     <Row label="PERMISSION TO CONTACT GP" value={s.gp_contact_consent} />
 
                     <SectionTitle>PRESENTING COMPLAINT</SectionTitle>
+                    <Row label="SERVICES INTERESTED" value={(s.services_interested || []).join(', ') || 'None selected'} />
                     <Row label="DESCRIPTION OF AILMENT" value={s.description_of_ailment} />
                     <Row label="EXISTING OR NEW" value={s.existing_or_new} />
                     <Row label="MEDICATIONS" value={s.medications} />
@@ -211,6 +212,7 @@ export default function Admin() {
 
                     <SectionTitle>CONSENT</SectionTitle>
                     <Row label="CONSENT GIVEN" value={s.consent_given} />
+                    <Row label="COLON HYDROTHERAPY CONSENT GIVEN" value={s.ch_consent_given} />
                     <Row label="SIGNATURE" value={s.signature} />
                     <Row label="SIGNED DATE" value={s.signed_date} />
                   </div>

@@ -19,12 +19,12 @@ const initialForm = {
   gpName: '', gpTel: '', gpAddress: '', gpPostcode: '', gpContactConsent: false,
   descriptionOfAilment: '', existingOrNew: '', medications: '',
   hadRecentSurgery: '', surgeriesLast3Months: '',
-  respiratoryNotes: '',
-  cardiovascularNotes: '', cardiovascularFlags: [],
-  genitourinaryNotes: '', genitourinaryFlags: [],
-  gastrointestinalNotes: '', gastrointestinalFlags: [],
-  dermatologicalNotes: '',
-  musculoskeletalNotes: '', musculoskeletalFlags: [],
+  respiratoryGate: '', respiratoryNotes: '',
+  cardiovascularGate: '', cardiovascularNotes: '', cardiovascularFlags: [],
+  genitourinaryGate: '', genitourinaryNotes: '', genitourinaryFlags: [],
+  gastrointestinalGate: '', gastrointestinalNotes: '', gastrointestinalFlags: [],
+  dermatologicalGate: '', dermatologicalNotes: '',
+  musculoskeletalGate: '', musculoskeletalNotes: '', musculoskeletalFlags: [],
   womenPainfulPeriods: false, womenLastPeriodDate: '', womenVaginalDischarge: false,
   womenThrush: false, womenPregnant: false, womenComplicatedPregnancy: false,
   menopauseStatus: '', menopauseSymptoms: [],
@@ -33,7 +33,8 @@ const initialForm = {
   bowelDaily: false, bowelNumberPerDay: '', bowelDifficulty: false, bowelConsistency: '', bowelFlatulence: false,
   dietVegetarianVegan: false, dietFoodCravings: false, dietFoodCravingsDetail: '',
   dietDailyFluidIntake: '', dietEatingDisorder: false,
-  consentGiven: false, signature: '', signedDate: ''
+  consentGiven: false, chConsentGiven: false, signature: '', signedDate: '',
+  servicesInterested: []
 }
 
 function Field({ label, children, hint }) {
@@ -57,26 +58,52 @@ function YesNo({ checked, onChange, label }) {
   )
 }
 
-function FlagGroup({ title, notesKey, flagsKey, flags, form, update, toggleFlag, hint }) {
+function FlagGroup({ title, gateKey, notesKey, flagsKey, flags, form, update, toggleFlag, hint }) {
+  const setGate = (value) => {
+    update(gateKey, value)
+    if (value === 'no') {
+      update(notesKey, '')
+      update(flagsKey, [])
+    }
+  }
+
   return (
     <div>
-      <p className="font-mono text-xs tracking-wide text-moss/70 mb-1">{title}</p>
-      {hint && <p className="text-xs text-ink/40 italic mb-2">{hint}</p>}
-      <textarea
-        rows={2}
-        placeholder="Any history to note (leave blank if none)"
-        className={inputClass}
-        value={form[notesKey]}
-        onChange={(e) => update(notesKey, e.target.value)}
-      />
-      {flags.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {flags.map((f) => (
-            <label key={f} className="flex items-center gap-2 text-sm text-ochre">
-              <input type="checkbox" checked={form[flagsKey].includes(f)} onChange={() => toggleFlag(flagsKey, f)} />
-              {f}
-            </label>
-          ))}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs tracking-wide text-moss/70">{title}</p>
+          {hint && <p className="text-xs text-ink/40 italic mt-0.5">{hint}</p>}
+        </div>
+        <select
+          className="rounded-md border border-moss/20 bg-cream px-2 py-1.5 text-sm text-ink"
+          value={form[gateKey]}
+          onChange={(e) => setGate(e.target.value)}
+        >
+          <option value="">Select</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+
+      {form[gateKey] === 'yes' && (
+        <div className="mt-3">
+          <textarea
+            rows={2}
+            placeholder="Please give details"
+            className={inputClass}
+            value={form[notesKey]}
+            onChange={(e) => update(notesKey, e.target.value)}
+          />
+          {flags.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {flags.map((f) => (
+                <label key={f} className="flex items-center gap-2 text-sm text-ochre">
+                  <input type="checkbox" checked={form[flagsKey].includes(f)} onChange={() => toggleFlag(flagsKey, f)} />
+                  {f}
+                </label>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -184,7 +211,9 @@ export default function ClientIntake() {
       diet_vegetarian_vegan: form.dietVegetarianVegan, diet_food_cravings: form.dietFoodCravings,
       diet_food_cravings_detail: form.dietFoodCravingsDetail, diet_daily_fluid_intake: form.dietDailyFluidIntake,
       diet_eating_disorder: form.dietEatingDisorder,
-      consent_given: form.consentGiven, signature: form.signature, signed_date: form.signedDate || null,
+      consent_given: form.consentGiven, ch_consent_given: form.chConsentGiven,
+      signature: form.signature, signed_date: form.signedDate || null,
+      services_interested: form.servicesInterested,
       status: anyFlags.length > 0 ? 'flagged' : 'new'
     })
     setSubmitting(false)
@@ -267,6 +296,18 @@ export default function ClientIntake() {
 
             <Field label="LIST OF MEDICINES YOU ARE CURRENTLY TAKING"><textarea rows={3} className={inputClass} value={form.medications} onChange={(e) => update('medications', e.target.value)} /></Field>
 
+            <div>
+              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">WHICH SERVICE(S) ARE YOU HERE FOR?</p>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {['Colon Hydrotherapy', 'Herbal Medicine', 'Aromatherapy Massage', 'Cleanse Programme', 'Gut & Lab Testing'].map((s) => (
+                  <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
+                    <input type="checkbox" checked={form.servicesInterested.includes(s)} onChange={() => toggleFlag('servicesInterested', s)} />
+                    {s}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-5">
               <Field label="YOUR HEALTH STORY" hint="Tell me the story behind your symptoms and how they affect your life.">
                 <textarea rows={4} className={inputClass} value={form.descriptionOfAilment} onChange={(e) => update('descriptionOfAilment', e.target.value)} />
@@ -305,12 +346,12 @@ export default function ClientIntake() {
               Items shown in orange are specific conditions the clinic needs to know about before hydrotherapy treatment.
             </p>
 
-            <FlagGroup title="RESPIRATORY — e.g. asthma, shortness of breath" notesKey="respiratoryNotes" flagsKey="respiratoryFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
-            <FlagGroup title="CARDIOVASCULAR — e.g. high blood pressure, poor circulation, angina" notesKey="cardiovascularNotes" flagsKey="cardiovascularFlags" flags={cardiovascularFlags} form={form} update={update} toggleFlag={toggleFlag} />
-            <FlagGroup title="GENITOURINARY — e.g. kidney infection, kidney stones" notesKey="genitourinaryNotes" flagsKey="genitourinaryFlags" flags={genitourinaryFlags} form={form} update={update} toggleFlag={toggleFlag} />
-            <FlagGroup title="GASTROINTESTINAL — e.g. colitis, constipation, liver problems, rectal bleeding" notesKey="gastrointestinalNotes" flagsKey="gastrointestinalFlags" flags={gastrointestinalFlags} form={form} update={update} toggleFlag={toggleFlag} />
-            <FlagGroup title="DERMATOLOGICAL — e.g. dry skin, eczema, psoriasis, itching" notesKey="dermatologicalNotes" flagsKey="dermatologicalFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
-            <FlagGroup title="MUSCULOSKELETAL — e.g. arthritis, rheumatism, low back pain, swollen joints" notesKey="musculoskeletalNotes" flagsKey="musculoskeletalFlags" flags={musculoskeletalFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="RESPIRATORY — e.g. asthma, shortness of breath" gateKey="respiratoryGate" notesKey="respiratoryNotes" flagsKey="respiratoryFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="CARDIOVASCULAR — e.g. high blood pressure, poor circulation, angina" gateKey="cardiovascularGate" notesKey="cardiovascularNotes" flagsKey="cardiovascularFlags" flags={cardiovascularFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="GENITOURINARY — e.g. kidney infection, kidney stones" gateKey="genitourinaryGate" notesKey="genitourinaryNotes" flagsKey="genitourinaryFlags" flags={genitourinaryFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="GASTROINTESTINAL — e.g. colitis, constipation, liver problems, rectal bleeding" gateKey="gastrointestinalGate" notesKey="gastrointestinalNotes" flagsKey="gastrointestinalFlags" flags={gastrointestinalFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="DERMATOLOGICAL — e.g. dry skin, eczema, psoriasis, itching" gateKey="dermatologicalGate" notesKey="dermatologicalNotes" flagsKey="dermatologicalFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="MUSCULOSKELETAL — e.g. arthritis, rheumatism, low back pain, swollen joints" gateKey="musculoskeletalGate" notesKey="musculoskeletalNotes" flagsKey="musculoskeletalFlags" flags={musculoskeletalFlags} form={form} update={update} toggleFlag={toggleFlag} />
 
             <RootDivider />
 
@@ -424,6 +465,30 @@ export default function ClientIntake() {
               <input required type="checkbox" className="mt-1" checked={form.consentGiven} onChange={(e) => update('consentGiven', e.target.checked)} />
               I have read and agree to the statement above.
             </label>
+
+            {form.servicesInterested.includes('Colon Hydrotherapy') && (
+              <>
+                <div className="bg-cream border border-moss/10 rounded-lg p-5 text-sm text-ink/80 space-y-3">
+                  <p>
+                    Colon hydrotherapy involves the gentle introduction of filtered water into the colon via a
+                    single-use, disposable speculum, to soften and clear waste. This may involve a digital
+                    examination before treatment. Sessions typically last 30–45 minutes. Mild cramping or
+                    light-headedness afterwards is normal and usually passes quickly.
+                  </p>
+                </div>
+                <label className="flex items-start gap-3 text-sm text-ink/80">
+                  <input
+                    required
+                    type="checkbox"
+                    className="mt-1"
+                    checked={form.chConsentGiven}
+                    onChange={(e) => update('chConsentGiven', e.target.checked)}
+                  />
+                  I understand the colon hydrotherapy procedure described above, including the digital
+                  examination, and I consent to it being carried out.
+                </label>
+              </>
+            )}
 
             <div className="grid sm:grid-cols-2 gap-5">
               <Field label="TYPE FULL NAME AS SIGNATURE"><input required className={inputClass} value={form.signature} onChange={(e) => update('signature', e.target.value)} /></Field>
