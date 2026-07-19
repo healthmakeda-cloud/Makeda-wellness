@@ -14,6 +14,8 @@ const columns = [
   'women_painful_periods', 'women_last_period_date', 'women_vaginal_discharge',
   'women_thrush', 'women_pregnant', 'women_complicated_pregnancy',
   'menopause_status', 'menopause_symptoms',
+  'men_prostate_problems', 'men_testicular_pain', 'men_erectile_difficulties',
+  'men_low_libido', 'men_fertility_concerns',
   'bowel_daily', 'bowel_number_per_day', 'bowel_difficulty', 'bowel_consistency', 'bowel_flatulence',
   'diet_vegetarian_vegan', 'diet_food_cravings', 'diet_food_cravings_detail',
   'diet_daily_fluid_intake', 'diet_eating_disorder',

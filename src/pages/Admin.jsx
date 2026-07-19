@@ -176,14 +176,26 @@ export default function Admin() {
                     <Row label="MUSCULOSKELETAL FLAGS" value={(s.musculoskeletal_flags || []).join(', ') || 'None'} />
 
                     <SectionTitle>WOMEN'S HEALTH & MENOPAUSE</SectionTitle>
-                    <Row label="PAINFUL PERIODS" value={s.women_painful_periods} />
-                    <Row label="LAST PERIOD DATE" value={s.women_last_period_date} />
-                    <Row label="VAGINAL DISCHARGE" value={s.women_vaginal_discharge} />
-                    <Row label="THRUSH" value={s.women_thrush} />
-                    <Row label="PREGNANT" value={s.women_pregnant} />
-                    <Row label="COMPLICATED PREGNANCY" value={s.women_complicated_pregnancy} />
-                    <Row label="MENOPAUSE STATUS" value={s.menopause_status} />
-                    <Row label="MENOPAUSE SYMPTOMS" value={(s.menopause_symptoms || []).join(', ') || 'None'} />
+                    {s.sex === 'M' ? (
+                      <>
+                        <Row label="PROSTATE PROBLEMS" value={s.men_prostate_problems} />
+                        <Row label="TESTICULAR PAIN OR SWELLING" value={s.men_testicular_pain} />
+                        <Row label="ERECTILE DIFFICULTIES" value={s.men_erectile_difficulties} />
+                        <Row label="LOW LIBIDO" value={s.men_low_libido} />
+                        <Row label="FERTILITY CONCERNS" value={s.men_fertility_concerns} />
+                      </>
+                    ) : (
+                      <>
+                        <Row label="PAINFUL PERIODS" value={s.women_painful_periods} />
+                        <Row label="LAST PERIOD DATE" value={s.women_last_period_date} />
+                        <Row label="VAGINAL DISCHARGE" value={s.women_vaginal_discharge} />
+                        <Row label="THRUSH" value={s.women_thrush} />
+                        <Row label="PREGNANT" value={s.women_pregnant} />
+                        <Row label="COMPLICATED PREGNANCY" value={s.women_complicated_pregnancy} />
+                        <Row label="MENOPAUSE STATUS" value={s.menopause_status} />
+                        <Row label="MENOPAUSE SYMPTOMS" value={(s.menopause_symptoms || []).join(', ') || 'None'} />
+                      </>
+                    )}
 
                     <SectionTitle>BOWEL & DIET</SectionTitle>
                     <Row label="DAILY BOWEL MOVEMENTS" value={s.bowel_daily} />

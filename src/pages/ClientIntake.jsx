@@ -28,6 +28,8 @@ const initialForm = {
   womenPainfulPeriods: false, womenLastPeriodDate: '', womenVaginalDischarge: false,
   womenThrush: false, womenPregnant: false, womenComplicatedPregnancy: false,
   menopauseStatus: '', menopauseSymptoms: [],
+  menProstateProblems: false, menTesticularPain: false, menErectileDifficulties: false,
+  menLowLibido: false, menFertilityConcerns: false,
   bowelDaily: false, bowelNumberPerDay: '', bowelDifficulty: false, bowelConsistency: '', bowelFlatulence: false,
   dietVegetarianVegan: false, dietFoodCravings: false, dietFoodCravingsDetail: '',
   dietDailyFluidIntake: '', dietEatingDisorder: false,
@@ -173,6 +175,9 @@ export default function ClientIntake() {
       women_vaginal_discharge: form.womenVaginalDischarge, women_thrush: form.womenThrush,
       women_pregnant: form.womenPregnant, women_complicated_pregnancy: form.womenComplicatedPregnancy,
       menopause_status: form.menopauseStatus, menopause_symptoms: form.menopauseSymptoms,
+      men_prostate_problems: form.menProstateProblems, men_testicular_pain: form.menTesticularPain,
+      men_erectile_difficulties: form.menErectileDifficulties, men_low_libido: form.menLowLibido,
+      men_fertility_concerns: form.menFertilityConcerns,
       bowel_daily: form.bowelDaily, bowel_number_per_day: form.bowelNumberPerDay,
       bowel_difficulty: form.bowelDifficulty, bowel_consistency: form.bowelConsistency,
       bowel_flatulence: form.bowelFlatulence,
@@ -233,7 +238,7 @@ export default function ClientIntake() {
               <Field label="SURNAME"><input required className={inputClass} value={form.surname} onChange={(e) => update('surname', e.target.value)} /></Field>
               <Field label="DATE OF BIRTH"><input required type="date" className={inputClass} value={form.dob} onChange={(e) => update('dob', e.target.value)} /></Field>
               <Field label="SEX">
-                <select className={inputClass} value={form.sex} onChange={(e) => update('sex', e.target.value)}>
+                <select required className={inputClass} value={form.sex} onChange={(e) => update('sex', e.target.value)}>
                   <option value="">Select</option>
                   <option value="F">Female</option>
                   <option value="M">Male</option>
@@ -309,47 +314,69 @@ export default function ClientIntake() {
 
             <RootDivider />
 
-            <div>
-              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">WOMEN'S HEALTH</p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                <YesNo checked={form.womenPainfulPeriods} onChange={(v) => update('womenPainfulPeriods', v)} label="Painful periods" />
-                <YesNo checked={form.womenVaginalDischarge} onChange={(v) => update('womenVaginalDischarge', v)} label="Vaginal discharge" />
-                <YesNo checked={form.womenThrush} onChange={(v) => update('womenThrush', v)} label="Bouts of thrush" />
-                <YesNo checked={form.womenPregnant} onChange={(v) => update('womenPregnant', v)} label="Currently pregnant" />
-              </div>
-              <div className="mt-3 grid sm:grid-cols-2 gap-4">
-                <Field label="LAST PERIOD DATE"><input type="date" className={inputClass} value={form.womenLastPeriodDate} onChange={(e) => update('womenLastPeriodDate', e.target.value)} /></Field>
-              </div>
-              <label className="flex items-center gap-2 text-sm text-ochre mt-2">
-                <input type="checkbox" checked={form.womenComplicatedPregnancy} onChange={(e) => update('womenComplicatedPregnancy', e.target.checked)} />
-                Complicated pregnancy
-              </label>
-            </div>
-
-            <RootDivider />
-
-            <div>
-              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">MENOPAUSE</p>
-              <Field label="STATUS">
-                <select className={inputClass} value={form.menopauseStatus} onChange={(e) => update('menopauseStatus', e.target.value)}>
-                  <option value="">Select</option>
-                  <option value="pre">Pre-menopausal</option>
-                  <option value="peri">Peri-menopausal</option>
-                  <option value="post">Post-menopausal</option>
-                  <option value="not-applicable">Not applicable</option>
-                </select>
-              </Field>
-              <p className="font-mono text-xs tracking-wide text-moss/70 mt-4 mb-2">SYMPTOMS — tick any that apply</p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {menopauseSymptomsList.map((s) => (
-                  <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
-                    <input type="checkbox" checked={form.menopauseSymptoms.includes(s)} onChange={() => toggleFlag('menopauseSymptoms', s)} />
-                    {s}
+            {form.sex === 'F' && (
+              <>
+                <div>
+                  <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">WOMEN'S HEALTH</p>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <YesNo checked={form.womenPainfulPeriods} onChange={(v) => update('womenPainfulPeriods', v)} label="Painful periods" />
+                    <YesNo checked={form.womenVaginalDischarge} onChange={(v) => update('womenVaginalDischarge', v)} label="Vaginal discharge" />
+                    <YesNo checked={form.womenThrush} onChange={(v) => update('womenThrush', v)} label="Bouts of thrush" />
+                    <YesNo checked={form.womenPregnant} onChange={(v) => update('womenPregnant', v)} label="Currently pregnant" />
+                  </div>
+                  <div className="mt-3 grid sm:grid-cols-2 gap-4">
+                    <Field label="LAST PERIOD DATE"><input type="date" className={inputClass} value={form.womenLastPeriodDate} onChange={(e) => update('womenLastPeriodDate', e.target.value)} /></Field>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-ochre mt-2">
+                    <input type="checkbox" checked={form.womenComplicatedPregnancy} onChange={(e) => update('womenComplicatedPregnancy', e.target.checked)} />
+                    Complicated pregnancy
                   </label>
-                ))}
-              </div>
-            </div>
+                </div>
 
+                <RootDivider />
+
+                <div>
+                  <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">MENOPAUSE</p>
+                  <Field label="STATUS">
+                    <select className={inputClass} value={form.menopauseStatus} onChange={(e) => update('menopauseStatus', e.target.value)}>
+                      <option value="">Select</option>
+                      <option value="pre">Pre-menopausal</option>
+                      <option value="peri">Peri-menopausal</option>
+                      <option value="post">Post-menopausal</option>
+                      <option value="not-applicable">Not applicable</option>
+                    </select>
+                  </Field>
+                  <p className="font-mono text-xs tracking-wide text-moss/70 mt-4 mb-2">SYMPTOMS — tick any that apply</p>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {menopauseSymptomsList.map((s) => (
+                      <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
+                        <input type="checkbox" checked={form.menopauseSymptoms.includes(s)} onChange={() => toggleFlag('menopauseSymptoms', s)} />
+                        {s}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {form.sex === 'M' && (
+              <div>
+                <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">MEN'S HEALTH</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <YesNo checked={form.menProstateProblems} onChange={(v) => update('menProstateProblems', v)} label="Prostate problems" />
+                  <YesNo checked={form.menTesticularPain} onChange={(v) => update('menTesticularPain', v)} label="Testicular pain or swelling" />
+                  <YesNo checked={form.menErectileDifficulties} onChange={(v) => update('menErectileDifficulties', v)} label="Erectile difficulties" />
+                  <YesNo checked={form.menLowLibido} onChange={(v) => update('menLowLibido', v)} label="Low libido" />
+                  <YesNo checked={form.menFertilityConcerns} onChange={(v) => update('menFertilityConcerns', v)} label="Fertility concerns" />
+                </div>
+              </div>
+            )}
+
+            {!form.sex && (
+              <p className="text-sm text-ink/50 italic">
+                Go back to step 1 and select your sex to see the relevant health questions here.
+              </p>
+            )}
             <RootDivider />
 
             <div>
