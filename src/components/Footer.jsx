@@ -30,8 +30,9 @@ export default function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-linen/10 py-5 text-center text-xs text-linen/50 font-mono">
-        © {new Date().getFullYear()} Makeda Hemans. All rights reserved.
+      <div className="border-t border-linen/10 py-5 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-linen/50 font-mono">
+        <span>© {new Date().getFullYear()} Makeda Hemans. All rights reserved.</span>
+        <a href="/privacy" className="hover:text-linen underline underline-offset-2">Privacy & GDPR</a>
       </div>
     </footer>
   )
