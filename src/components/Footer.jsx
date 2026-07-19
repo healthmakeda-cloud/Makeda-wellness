@@ -26,7 +26,7 @@ export default function Footer() {
           <p className="font-mono text-xs tracking-widest text-ochre mb-3">GET IN TOUCH</p>
           <ul className="space-y-1 text-sm text-linen/80">
             <li><a href="/contact" className="hover:text-linen">Contact & booking</a></li>
-            <li><a href="/client-intake" className="hover:text-linen">Client intake forms</a></li>
+            <li><a href="/client-intake" className="hover:text-linen">Your health journey</a></li>
           </ul>
         </div>
       </div>

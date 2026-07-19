@@ -40,13 +40,18 @@ export default function Home() {
             The gut is the root.
             <br />Everything else grows from it.
           </h1>
-          <p className="mt-6 text-ink/80 max-w-md">
-            Makeda Hemans combines herbal medicine and colon hydrotherapy across four London clinics,
+          <p className="mt-6 text-ink/80 max-w-md italic">
+            The Makéda Method™ helps people tell their health story — enabling personalised,
+            evidence-informed, whole-person care that honours each individual's cultural
+            heritage and lived experience. <Link to="/about" className="text-ochre not-italic">See the method →</Link>
+          </p>
+          <p className="mt-4 text-ink/80 max-w-md">
+            Makéda Hemans combines herbal medicine and colon hydrotherapy across four London clinics,
             working from the gut outward to support lasting change.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link to="/client-intake" className="bg-moss text-linen px-6 py-3 rounded font-body text-sm hover:bg-ink transition-colors">
-              Start client intake
+              Start your health journey
             </Link>
             <Link to="/services" className="border border-moss text-moss px-6 py-3 rounded font-body text-sm hover:bg-moss/5 transition-colors">
               View services

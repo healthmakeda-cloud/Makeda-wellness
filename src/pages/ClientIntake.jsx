@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import RootDivider from '../components/RootDivider.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 
@@ -11,11 +11,14 @@ const menopauseSymptomsList = [
   'Hair loss', 'Mood changes', 'Sleep disturbance', 'Joint pain', 'Low libido'
 ]
 
+const DRAFT_KEY = 'makeda_intake_draft'
+
 const initialForm = {
   firstName: '', surname: '', dob: '', sex: '', address: '', postcode: '',
   email: '', mobile: '', landline: '',
   gpName: '', gpTel: '', gpAddress: '', gpPostcode: '', gpContactConsent: false,
-  descriptionOfAilment: '', existingOrNew: '', medications: '', surgeriesLast3Months: '',
+  descriptionOfAilment: '', existingOrNew: '', medications: '',
+  hadRecentSurgery: '', surgeriesLast3Months: '',
   respiratoryNotes: '',
   cardiovascularNotes: '', cardiovascularFlags: [],
   genitourinaryNotes: '', genitourinaryFlags: [],
@@ -35,7 +38,7 @@ function Field({ label, children, hint }) {
   return (
     <label className="block">
       <span className="font-mono text-xs tracking-wide text-moss/70">{label}</span>
-      {hint && <span className="block text-xs text-ink/40 italic mt-0.5">{hint}</span>}
+      {hint && <span className="block text-xs text-ink/50 italic mt-0.5 font-body tracking-normal">{hint}</span>}
       <div className="mt-1">{children}</div>
     </label>
   )
@@ -85,6 +88,49 @@ export default function ClientIntake() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  // Restore an in-progress draft (covers accidental refresh / navigating away),
+  // and set up a baseline history entry so the back button can step backward
+  // through the form instead of leaving the page and losing everything.
+  useEffect(() => {
+    let restoredStep = 1
+    try {
+      const saved = sessionStorage.getItem(DRAFT_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.form) setForm(parsed.form)
+        if (parsed.step) {
+          restoredStep = parsed.step
+          setStep(parsed.step)
+        }
+      }
+    } catch (err) {
+      // ignore a corrupt draft
+    }
+    window.history.replaceState({ step: restoredStep }, '', window.location.pathname)
+
+    const handlePopState = (e) => {
+      if (e.state && e.state.step) setStep(e.state.step)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Keep the draft saved as they go, and scroll to the top on every step change
+  // (mobile browsers otherwise leave you scrolled halfway down the previous step).
+  useEffect(() => {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, step }))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
+
+  useEffect(() => {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, step }))
+  }, [form])
+
+  const goToStep = (n) => {
+    window.history.pushState({ step: n }, '', window.location.pathname)
+    setStep(n)
+  }
+
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }))
   const toggleFlag = (key, value) => {
     setForm((f) => {
@@ -115,7 +161,8 @@ export default function ClientIntake() {
       gp_name: form.gpName, gp_tel: form.gpTel, gp_address: form.gpAddress, gp_postcode: form.gpPostcode,
       gp_contact_consent: form.gpContactConsent,
       description_of_ailment: form.descriptionOfAilment, existing_or_new: form.existingOrNew,
-      medications: form.medications, surgeries_last_3_months: form.surgeriesLast3Months,
+      medications: form.medications,
+      surgeries_last_3_months: form.hadRecentSurgery === 'yes' ? form.surgeriesLast3Months : '',
       respiratory_notes: form.respiratoryNotes,
       cardiovascular_notes: form.cardiovascularNotes, cardiovascular_flags: form.cardiovascularFlags,
       genitourinary_notes: form.genitourinaryNotes, genitourinary_flags: form.genitourinaryFlags,
@@ -138,9 +185,13 @@ export default function ClientIntake() {
     setSubmitting(false)
 
     if (insertError) {
+      // Logged for debugging — the message shown to the client stays generic
+      // and reassuring, but this tells us exactly what went wrong.
+      console.error('Intake submission failed:', insertError)
       setError('There was a problem saving your form. Please try again or contact the clinic directly.')
       return
     }
+    sessionStorage.removeItem(DRAFT_KEY)
     setSubmitted(true)
   }
 
@@ -149,7 +200,7 @@ export default function ClientIntake() {
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <h1 className="font-display text-3xl text-moss mb-4">Thank you, {form.firstName || 'there'}.</h1>
         <p className="text-ink/70">
-          Your intake form has been received. Makéda will review it ahead of your first session.
+          Your health journey form has been received. Makéda will review it ahead of your first session.
           {anyFlags.length > 0 && ' Because you flagged one or more items on the contraindications list, the clinic will contact you directly before your appointment to discuss next steps.'}
         </p>
       </div>
@@ -158,7 +209,7 @@ export default function ClientIntake() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-16">
-      <p className="font-mono text-xs tracking-widest text-ochre mb-4">CLIENT INTAKE</p>
+      <p className="font-mono text-xs tracking-widest text-ochre mb-4">YOUR HEALTH JOURNEY</p>
       <h1 className="font-display text-3xl text-moss mb-2">Before your first session</h1>
       <p className="text-ink/70 mb-10 text-sm">
         This mirrors the paper form used in clinic — contact and GP details, health history by system, then consent.
@@ -198,6 +249,7 @@ export default function ClientIntake() {
 
             <RootDivider />
 
+            <p className="font-mono text-xs tracking-wide text-moss/50 -mb-2">GP DETAILS (OPTIONAL)</p>
             <div className="grid sm:grid-cols-2 gap-5">
               <Field label="GP'S NAME"><input className={inputClass} value={form.gpName} onChange={(e) => update('gpName', e.target.value)} /></Field>
               <Field label="GP'S TELEPHONE"><input className={inputClass} value={form.gpTel} onChange={(e) => update('gpTel', e.target.value)} /></Field>
@@ -211,7 +263,9 @@ export default function ClientIntake() {
             <Field label="LIST OF MEDICINES YOU ARE CURRENTLY TAKING"><textarea rows={3} className={inputClass} value={form.medications} onChange={(e) => update('medications', e.target.value)} /></Field>
 
             <div className="grid sm:grid-cols-2 gap-5">
-              <Field label="DESCRIPTION OF AILMENT"><textarea rows={3} className={inputClass} value={form.descriptionOfAilment} onChange={(e) => update('descriptionOfAilment', e.target.value)} /></Field>
+              <Field label="YOUR HEALTH STORY" hint="Tell me the story behind your symptoms and how they affect your life.">
+                <textarea rows={4} className={inputClass} value={form.descriptionOfAilment} onChange={(e) => update('descriptionOfAilment', e.target.value)} />
+              </Field>
               <Field label="EXISTING OR NEW CONDITION">
                 <select className={inputClass} value={form.existingOrNew} onChange={(e) => update('existingOrNew', e.target.value)}>
                   <option value="">Select</option>
@@ -221,10 +275,21 @@ export default function ClientIntake() {
               </Field>
             </div>
 
-            <Field label="ANY SURGERIES IN THE LAST 3 MONTHS"><textarea rows={2} className={inputClass} value={form.surgeriesLast3Months} onChange={(e) => update('surgeriesLast3Months', e.target.value)} /></Field>
+            <Field label="ANY SURGERIES IN THE LAST 3 MONTHS?">
+              <select className={inputClass} value={form.hadRecentSurgery} onChange={(e) => update('hadRecentSurgery', e.target.value)}>
+                <option value="">Select</option>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </Field>
+            {form.hadRecentSurgery === 'yes' && (
+              <Field label="PLEASE GIVE DETAILS">
+                <textarea rows={2} className={inputClass} value={form.surgeriesLast3Months} onChange={(e) => update('surgeriesLast3Months', e.target.value)} />
+              </Field>
+            )}
 
             <div className="flex justify-end">
-              <button type="button" onClick={() => setStep(2)} className="bg-moss text-linen px-6 py-3 rounded text-sm">Continue</button>
+              <button type="button" onClick={() => goToStep(2)} className="bg-moss text-linen px-6 py-3 rounded text-sm">Continue</button>
             </div>
           </div>
         )}
@@ -306,8 +371,8 @@ export default function ClientIntake() {
             </div>
 
             <div className="flex justify-between">
-              <button type="button" onClick={() => setStep(1)} className="text-moss text-sm">Back</button>
-              <button type="button" onClick={() => setStep(3)} className="bg-moss text-linen px-6 py-3 rounded text-sm">Continue</button>
+              <button type="button" onClick={() => goToStep(1)} className="text-moss text-sm">Back</button>
+              <button type="button" onClick={() => goToStep(3)} className="bg-moss text-linen px-6 py-3 rounded text-sm">Continue</button>
             </div>
           </div>
         )}
@@ -324,9 +389,7 @@ export default function ClientIntake() {
             <div className="bg-cream border border-moss/10 rounded-lg p-5 text-sm text-ink/80 space-y-3">
               <p>
                 My signature below confirms that the information given above is, to the best of my knowledge, true
-                and accurate and I have not withheld any information. I do not have contraindications as stated
-                above. The procedure for colon hydrotherapy has been explained, and I hereby give my consent to
-                undergo a digital examination and colonic hydrotherapy to be performed upon myself.
+                and accurate and I have not withheld any information.
               </p>
             </div>
 
@@ -341,9 +404,9 @@ export default function ClientIntake() {
             </div>
 
             <div className="flex justify-between">
-              <button type="button" onClick={() => setStep(2)} className="text-moss text-sm">Back</button>
+              <button type="button" onClick={() => goToStep(2)} className="text-moss text-sm">Back</button>
               <button type="submit" disabled={submitting} className="bg-ochre text-cream px-6 py-3 rounded text-sm disabled:opacity-50">
-                {submitting ? 'Submitting…' : 'Submit intake form'}
+                {submitting ? 'Submitting…' : 'Submit health journey form'}
               </button>
             </div>
           </div>

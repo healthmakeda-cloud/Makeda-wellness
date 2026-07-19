@@ -71,7 +71,7 @@ export default function Members() {
         <p className="font-mono text-xs tracking-widest text-ochre mb-4 text-center">MEMBERS</p>
         <h1 className="font-display text-2xl text-moss mb-3 text-center">Sign in</h1>
         <p className="text-sm text-ink/60 mb-8 text-center">
-          Use the same email you gave on your client intake form. We'll send a one-time link — no password needed.
+          Use the same email you gave on your health journey form. We'll send a one-time link — no password needed.
         </p>
 
         {linkSent ? (
@@ -112,14 +112,14 @@ export default function Members() {
 
       {latest ? (
         <div className="bg-cream border border-moss/10 rounded-lg p-5 space-y-2 text-sm text-ink/80">
-          <p className="font-mono text-xs text-ochre">YOUR INTAKE FORM</p>
+          <p className="font-mono text-xs text-ochre">YOUR HEALTH JOURNEY</p>
           <p>Submitted {new Date(latest.created_at).toLocaleDateString()}</p>
           <p>Reason for visit: {latest.description_of_ailment || '—'}</p>
           <p>Consent on file: {latest.consent_given ? 'Yes' : 'Not yet completed'}</p>
         </div>
       ) : (
         <p className="text-sm text-ink/60">
-          No intake form found for this email yet. If you've just submitted one, check that you used the same
+          No health journey form found for this email yet. If you've just submitted one, check that you used the same
           email address.
         </p>
       )}

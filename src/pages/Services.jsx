@@ -30,7 +30,7 @@ export default function Services() {
       <h1 className="font-display text-3xl md:text-4xl text-moss mb-4">Treatments & programmes</h1>
       <p className="text-ink/70 max-w-xl mb-12">
         Every plan starts with a consultation. Book at any of the four clinic locations, or start with the
-        client intake form so your first session begins with full context.
+        Your health journey form so your first session begins with full context.
       </p>
 
       <div className="space-y-10">

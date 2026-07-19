@@ -7,7 +7,7 @@ const links = [
   { to: '/about', label: 'About' },
   { to: '/services', label: 'Services' },
   { to: '/shop', label: 'Shop' },
-  { to: '/client-intake', label: 'Client intake' },
+  { to: '/client-intake', label: 'Your health journey' },
   { to: '/vlog', label: 'Vlog' },
   { to: '/members', label: 'Members' },
   { to: '/contact', label: 'Contact' }

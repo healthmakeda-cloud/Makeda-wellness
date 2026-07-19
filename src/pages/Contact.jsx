@@ -8,7 +8,7 @@ export default function Contact() {
 
       <p className="text-ink/70 mb-10 max-w-xl">
         [Replace with the real booking flow — a phone number, email, or embedded booking widget from
-        makedah.com. New clients should complete the client intake form before their first session.]
+        makedah.com. New clients should complete the Your health journey form before their first session.]
       </p>
 
       <div className="grid sm:grid-cols-2 gap-5">
