@@ -14,7 +14,9 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="font-mono text-xs tracking-widest text-ochre mb-3">CLINIC LOCATIONS</p>
+          <a href="/contact" className="font-mono text-xs tracking-widest text-ochre mb-3 block hover:text-linen transition-colors">
+            CLINIC LOCATIONS
+          </a>
           <ul className="space-y-1 text-sm text-linen/80">
             {locations.map((loc) => (
               <li key={loc.name}>{loc.name} — {loc.area}</li>
@@ -23,7 +25,9 @@ export default function Footer() {
         </div>
 
         <div>
-          <p className="font-mono text-xs tracking-widest text-ochre mb-3">GET IN TOUCH</p>
+          <a href="/contact" className="font-mono text-xs tracking-widest text-ochre mb-3 block hover:text-linen transition-colors">
+            GET IN TOUCH
+          </a>
           <ul className="space-y-1 text-sm text-linen/80">
             <li><a href="/contact" className="hover:text-linen">Contact & booking</a></li>
             <li><a href="/client-intake" className="hover:text-linen">Your health journey</a></li>

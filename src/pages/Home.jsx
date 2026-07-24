@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import RootDivider from '../components/RootDivider.jsx'
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
+import MakedaMethodModule from '../components/MakedaMethodModule.jsx'
 import { services } from '../data/services.js'
 
 const testimonials = [
@@ -21,7 +22,7 @@ export default function Home() {
           <p className="mt-6 text-ink/80 max-w-md italic">
             The Makéda Method™ helps people tell their health story — enabling personalised,
             evidence-informed, whole-person care that honours each individual's cultural
-            heritage and lived experience. <Link to="/about" className="text-ochre not-italic">See the method →</Link>
+            heritage and lived experience.
           </p>
           <p className="mt-4 text-ink/80 max-w-md">
             Makéda Hemans combines herbal medicine and colon hydrotherapy across three London clinics,
@@ -41,6 +42,10 @@ export default function Home() {
           <img src="/icons/icon-512.png" alt="Makéda's Health mark" className="h-64 w-64" />
         </div>
       </section>
+
+      <div className="max-w-6xl mx-auto px-6 pb-16">
+        <MakedaMethodModule />
+      </div>
 
       <div className="max-w-6xl mx-auto px-6">
         <img
