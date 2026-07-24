@@ -14,7 +14,7 @@ export default function MakedaMethodModule() {
   const [openLetter, setOpenLetter] = useState(null)
 
   return (
-    <div className="max-w-2xl mx-auto bg-cream border border-moss/10 rounded-xl p-6 sm:p-8">
+    <div className="bg-cream border border-moss/10 rounded-xl p-6 sm:p-8">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between text-left"

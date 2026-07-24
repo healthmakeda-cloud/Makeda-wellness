@@ -39,23 +39,28 @@ export default function Home() {
         </div>
 
         <div className="flex justify-center">
-          <img src="/icons/icon-512.png" alt="Makéda's Health mark" className="h-64 w-64" />
+          <img
+            src="/images/home-banner-square.jpg"
+            alt="Hands gathering fresh herbs into a bowl, morning light"
+            className="w-full aspect-square object-cover rounded-xl"
+          />
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-6 pb-16">
+      <section className="max-w-6xl mx-auto px-6 pb-16 grid md:grid-cols-2 gap-8 items-center">
+        <div className="flex justify-center">
+          <img
+            src="/icons/icon-512.png"
+            alt="Makéda's Health mark"
+            className="h-40 w-40 sm:h-48 sm:w-48 rounded-xl"
+          />
+        </div>
         <MakedaMethodModule />
-      </div>
+      </section>
 
       <div className="max-w-6xl mx-auto px-6">
-        <img
-          src="/images/home-banner.jpg"
-          alt="Hands gathering fresh herbs into a bowl, morning light"
-          className="w-full aspect-[21/9] object-cover rounded-xl"
-        />
+        <RootDivider />
       </div>
-
-      <RootDivider />
 
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="font-display text-2xl text-moss mb-10">Ways to work together</h2>
