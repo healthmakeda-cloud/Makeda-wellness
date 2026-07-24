@@ -1,4 +1,5 @@
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
+import { locations } from '../data/locations.js'
 
 export default function Contact() {
   return (
@@ -12,15 +13,17 @@ export default function Contact() {
       </p>
 
       <div className="grid sm:grid-cols-2 gap-5">
-        {[
-          "Baldwin's & Co — Camberwell",
-          'The Light Centre — Clapham',
-          'Brackenbury Health Clinic — Hammersmith',
-          'Wholistic Wellness Clinic'
-        ].map((loc, i) => (
-          <div key={loc} className="bg-cream border border-moss/10 rounded-lg overflow-hidden">
-            <ImagePlaceholder className="aspect-[16/9]" label="" tone="linen" variant={['berry', 'water', 'herb', 'root'][i % 4]} />
-            <div className="p-4 text-sm text-ink/80">{loc}</div>
+        {locations.map((loc) => (
+          <div key={loc.name} className="bg-cream border border-moss/10 rounded-lg overflow-hidden">
+            {loc.image ? (
+              <img src={loc.image} alt={loc.name} className="w-full aspect-[16/9] object-cover" />
+            ) : (
+              <ImagePlaceholder className="aspect-[16/9]" label="" tone="linen" variant={loc.variant} />
+            )}
+            <div className="p-4">
+              <p className="text-sm text-ink/80">{loc.name} — {loc.area}</p>
+              {loc.services && <p className="text-xs text-ochre mt-1">{loc.services}</p>}
+            </div>
           </div>
         ))}
       </div>

@@ -484,9 +484,8 @@ export default function ClientIntake() {
                 <div className="bg-cream border border-moss/10 rounded-lg p-5 text-sm text-ink/80 space-y-3">
                   <p>
                     Colon hydrotherapy involves the gentle introduction of filtered water into the colon via a
-                    single-use, disposable speculum, to soften and clear waste. This may involve a digital
-                    examination before treatment. Sessions typically last 30–45 minutes. Mild cramping or
-                    light-headedness afterwards is normal and usually passes quickly.
+                    single-use, disposable speculum, to soften and clear waste. Sessions typically last 30–45
+                    minutes. Mild cramping or light-headedness afterwards is normal and usually passes quickly.
                   </p>
                 </div>
                 <label className="flex items-start gap-3 text-sm text-ink/80">
@@ -497,8 +496,7 @@ export default function ClientIntake() {
                     checked={form.chConsentGiven}
                     onChange={(e) => update('chConsentGiven', e.target.checked)}
                   />
-                  I understand the colon hydrotherapy procedure described above, including the digital
-                  examination, and I consent to it being carried out.
+                  I understand the colon hydrotherapy procedure described above and consent to it being carried out.
                 </label>
               </>
             )}

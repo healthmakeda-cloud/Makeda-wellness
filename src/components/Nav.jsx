@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import RootMark from './RootMark.jsx'
 
 const links = [
   { to: '/', label: 'Home' },
@@ -19,9 +18,8 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-40 bg-linen/95 backdrop-blur border-b border-moss/10">
       <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-        <NavLink to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-          <RootMark className="h-9 w-9" variant="light" />
-          <span className="font-display text-xl text-moss tracking-wide">Makéda Health</span>
+        <NavLink to="/" className="flex items-center" onClick={() => setOpen(false)}>
+          <img src="/images/logo-full.jpg" alt="Makéda's Health" className="h-14 w-auto rounded" />
         </NavLink>
 
         <nav className="hidden md:flex items-center gap-8">

@@ -96,6 +96,14 @@ export default function Admin() {
     <div className="max-w-4xl mx-auto px-6 py-16">
       <div className="flex items-center justify-between mb-6">
         <p className="font-mono text-xs tracking-widest text-ochre">BACK OFFICE</p>
+        <a
+          href="https://nimh.org.uk/login/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-mono text-moss border border-moss/20 rounded px-3 py-1.5 hover:border-ochre hover:text-ochre transition-colors"
+        >
+          NIMH interaction checker ↗
+        </a>
       </div>
 
       <div className="flex gap-6 border-b border-moss/10 mb-8">

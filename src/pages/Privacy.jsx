@@ -15,7 +15,7 @@ export default function Privacy() {
           <h2 className="font-display text-xl text-moss mb-3">Who we are</h2>
           <p>
             Makéda Health, operated by Makéda Hemans, a medical herbalist and colon hydrotherapist
-            practising across four South London clinic locations. For any question about this
+            practising across three South London clinic locations. For any question about this
             policy or your data, contact: <strong>[insert contact email]</strong>.
           </p>
         </section>

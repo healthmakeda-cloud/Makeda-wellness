@@ -1,5 +1,6 @@
 import RootDivider from '../components/RootDivider.jsx'
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
+import { locations } from '../data/locations.js'
 
 export default function About() {
   return (
@@ -20,7 +21,7 @@ export default function About() {
             existing About page copy on makedah.com.]
           </p>
           <p>
-            She currently sees clients across four South London clinics, offering one-to-one consultations,
+            She currently sees clients across three South London clinics, offering one-to-one consultations,
             hydrotherapy sessions, herbal prescriptions and guided cleanse programmes.
           </p>
         </div>
@@ -60,10 +61,12 @@ export default function About() {
 
       <h2 className="font-display text-2xl text-moss mb-6">Where to find her</h2>
       <ul className="grid sm:grid-cols-2 gap-4 text-sm text-ink/80">
-        <li className="bg-cream border border-moss/10 rounded-lg p-4">Baldwin's & Co — Camberwell</li>
-        <li className="bg-cream border border-moss/10 rounded-lg p-4">The Light Centre — Clapham</li>
-        <li className="bg-cream border border-moss/10 rounded-lg p-4">Brackenbury Health Clinic — Hammersmith</li>
-        <li className="bg-cream border border-moss/10 rounded-lg p-4">Wholistic Wellness Clinic</li>
+        {locations.map((loc) => (
+          <li key={loc.name} className="bg-cream border border-moss/10 rounded-lg p-4">
+            <p>{loc.name} — {loc.area}</p>
+            {loc.services && <p className="text-xs text-ochre mt-1">{loc.services}</p>}
+          </li>
+        ))}
       </ul>
     </div>
   )

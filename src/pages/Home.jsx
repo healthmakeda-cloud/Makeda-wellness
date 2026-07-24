@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import RootMark from '../components/RootMark.jsx'
 import RootDivider from '../components/RootDivider.jsx'
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
 import { services } from '../data/services.js'
@@ -25,7 +24,7 @@ export default function Home() {
             heritage and lived experience. <Link to="/about" className="text-ochre not-italic">See the method →</Link>
           </p>
           <p className="mt-4 text-ink/80 max-w-md">
-            Makéda Hemans combines herbal medicine and colon hydrotherapy across four London clinics,
+            Makéda Hemans combines herbal medicine and colon hydrotherapy across three London clinics,
             working from the gut outward to support lasting change.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
@@ -39,7 +38,7 @@ export default function Home() {
         </div>
 
         <div className="flex justify-center">
-          <RootMark className="h-64 w-64" />
+          <img src="/icons/icon-512.png" alt="Makéda's Health mark" className="h-64 w-64" />
         </div>
       </section>
 

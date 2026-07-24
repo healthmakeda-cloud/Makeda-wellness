@@ -1,12 +1,13 @@
-import RootMark from './RootMark.jsx'
+import { locations } from '../data/locations.js'
 
 export default function Footer() {
   return (
     <footer className="bg-moss text-linen mt-32">
       <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-3">
         <div className="flex flex-col gap-3">
-          <RootMark className="h-10 w-10" variant="dark" />
-          <p className="font-display text-lg">Makéda Health</p>
+          <div className="bg-linen rounded-lg p-2 inline-block w-fit">
+            <img src="/images/logo-full.jpg" alt="Makéda's Health" className="h-16 w-auto rounded" />
+          </div>
           <p className="text-sm text-linen/70 max-w-xs">
             Herbal medicine and colon hydrotherapy for the gut, considered as the root of wellbeing.
           </p>
@@ -15,10 +16,9 @@ export default function Footer() {
         <div>
           <p className="font-mono text-xs tracking-widest text-ochre mb-3">CLINIC LOCATIONS</p>
           <ul className="space-y-1 text-sm text-linen/80">
-            <li>Baldwin's & Co — Camberwell</li>
-            <li>The Light Centre — Clapham</li>
-            <li>Brackenbury Health Clinic — Hammersmith</li>
-            <li>Wholistic Wellness Clinic</li>
+            {locations.map((loc) => (
+              <li key={loc.name}>{loc.name} — {loc.area}</li>
+            ))}
           </ul>
         </div>
 

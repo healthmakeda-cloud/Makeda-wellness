@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon.svg'],
+      includeAssets: ['icons/icon-192.png'],
       manifest: {
         name: 'Makéda Health — Herbal Medicine & Colon Hydrotherapy',
         short_name: 'Makéda Health',
