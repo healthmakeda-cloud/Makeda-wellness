@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import RootDivider from '../components/RootDivider.jsx'
+import MedicineSelector from '../components/MedicineSelector.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 
 const cardiovascularFlags = ['Severe cardiac disease', 'High blood pressure', 'Severe anaemia']
@@ -17,7 +18,8 @@ const initialForm = {
   firstName: '', surname: '', dob: '', sex: '', address: '', postcode: '',
   email: '', mobile: '', landline: '',
   gpName: '', gpTel: '', gpAddress: '', gpPostcode: '', gpContactConsent: false,
-  descriptionOfAilment: '', existingOrNew: '', medications: '',
+  descriptionOfAilment: '', existingOrNew: '',
+  medicationsSelected: [], medicationsOther: '', medicationsOtherChecked: false,
   hadRecentSurgery: '', surgeriesLast3Months: '',
   respiratoryGate: '', respiratoryNotes: '',
   cardiovascularGate: '', cardiovascularNotes: '', cardiovascularFlags: [],
@@ -190,7 +192,8 @@ export default function ClientIntake() {
       gp_name: form.gpName, gp_tel: form.gpTel, gp_address: form.gpAddress, gp_postcode: form.gpPostcode,
       gp_contact_consent: form.gpContactConsent,
       description_of_ailment: form.descriptionOfAilment, existing_or_new: form.existingOrNew,
-      medications: form.medications,
+      medications_selected: form.medicationsSelected,
+      medications_other: form.medicationsOtherChecked ? form.medicationsOther : '',
       surgeries_last_3_months: form.hadRecentSurgery === 'yes' ? form.surgeriesLast3Months : '',
       respiratory_notes: form.respiratoryNotes,
       cardiovascular_notes: form.cardiovascularNotes, cardiovascular_flags: form.cardiovascularFlags,
@@ -294,12 +297,22 @@ export default function ClientIntake() {
               I give permission for the clinic to contact my GP if needed. Your GP will not be contacted without this permission.
             </label>
 
-            <Field label="LIST OF MEDICINES YOU ARE CURRENTLY TAKING"><textarea rows={3} className={inputClass} value={form.medications} onChange={(e) => update('medications', e.target.value)} /></Field>
+            <div>
+              <span className="font-mono text-xs tracking-wide text-moss/70 block mb-1">LIST OF MEDICINES YOU ARE CURRENTLY TAKING</span>
+              <MedicineSelector
+                selected={form.medicationsSelected}
+                onToggle={(item) => toggleFlag('medicationsSelected', item)}
+                otherText={form.medicationsOther}
+                onOtherChange={(v) => update('medicationsOther', v)}
+                otherChecked={form.medicationsOtherChecked}
+                onOtherCheckedChange={(v) => update('medicationsOtherChecked', v)}
+              />
+            </div>
 
             <div>
               <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">WHICH SERVICE(S) ARE YOU HERE FOR?</p>
               <div className="grid sm:grid-cols-2 gap-2">
-                {['Colon Hydrotherapy', 'Herbal Medicine', 'Mind Reset System', 'Cleanse Programme', 'Gut & Lab Testing'].map((s) => (
+                {['Colon Hydrotherapy', 'Herbal Medicine', 'Cleanse Programme', 'Gut & Lab Testing'].map((s) => (
                   <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
                     <input type="checkbox" checked={form.servicesInterested.includes(s)} onChange={() => toggleFlag('servicesInterested', s)} />
                     {s}

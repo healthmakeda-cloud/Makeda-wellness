@@ -161,7 +161,8 @@ export default function Admin() {
                     <Row label="SERVICES INTERESTED" value={(s.services_interested || []).join(', ') || 'None selected'} />
                     <Row label="DESCRIPTION OF AILMENT" value={s.description_of_ailment} />
                     <Row label="EXISTING OR NEW" value={s.existing_or_new} />
-                    <Row label="MEDICATIONS" value={s.medications} />
+                    <Row label="MEDICATIONS" value={(s.medications_selected || []).join(', ') || (s.medications ? s.medications : 'None selected')} />
+                    <Row label="OTHER MEDICATIONS" value={s.medications_other} />
                     <Row label="SURGERIES (LAST 3 MONTHS)" value={s.surgeries_last_3_months} />
 
                     <SectionTitle>HEALTH HISTORY BY SYSTEM</SectionTitle>

@@ -36,12 +36,23 @@ export default function ServiceDetail() {
 
       <RootDivider />
 
-      <Link
-        to={service.cta.to}
-        className="inline-block bg-moss text-linen px-6 py-3 rounded font-body text-sm hover:bg-ink transition-colors"
-      >
-        {service.cta.label}
-      </Link>
+      {service.cta.to.startsWith('http') ? (
+        <a
+          href={service.cta.to}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-moss text-linen px-6 py-3 rounded font-body text-sm hover:bg-ink transition-colors"
+        >
+          {service.cta.label}
+        </a>
+      ) : (
+        <Link
+          to={service.cta.to}
+          className="inline-block bg-moss text-linen px-6 py-3 rounded font-body text-sm hover:bg-ink transition-colors"
+        >
+          {service.cta.label}
+        </Link>
+      )}
     </div>
   )
 }

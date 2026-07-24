@@ -35,6 +35,10 @@ export const services = [
       "Makéda works alongside this programme as an affiliate practitioner. [Full programme structure and what's included to be confirmed — please provide the official programme details so this page accurately reflects it.]"
     ],
     cta: { label: 'Enquire about Mind Reset', to: '/contact' }
+    // ⚠️ Once Makéda sends the real affiliate link, replace the line above with:
+    // cta: { label: 'Join the Mind Reset programme', to: 'https://the-real-affiliate-url' }
+    // ServiceDetail.jsx already detects a full URL automatically and opens it
+    // in a new tab instead of routing internally — no other changes needed.
   },
   {
     slug: 'cleanse-programmes',
