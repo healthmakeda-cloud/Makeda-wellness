@@ -4,6 +4,7 @@ import Footer from './components/Footer.jsx'
 import Home from './pages/Home.jsx'
 import About from './pages/About.jsx'
 import Services from './pages/Services.jsx'
+import ServiceDetail from './pages/ServiceDetail.jsx'
 import ClientIntake from './pages/ClientIntake.jsx'
 import Shop from './pages/Shop.jsx'
 import ShopSuccess from './pages/ShopSuccess.jsx'
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/client-intake" element={<ClientIntake />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/success" element={<ShopSuccess />} />

@@ -1,29 +1,8 @@
 import { Link } from 'react-router-dom'
 import RootMark from '../components/RootMark.jsx'
 import RootDivider from '../components/RootDivider.jsx'
-
-const services = [
-  {
-    title: 'Colon hydrotherapy',
-    copy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.',
-    image: '/images/colon-hydrotherapy.jpg'
-  },
-  {
-    title: 'Herbal medicine',
-    copy: 'Plant-based remedies tailored to your history and constitution, not a one-size prescription.',
-    image: '/images/herbal-medicine.jpeg'
-  },
-  {
-    title: 'Aromatherapy massage',
-    copy: 'Bodywork and essential oils used to support circulation, stress and recovery alongside your treatment plan.',
-    image: '/images/aromatherapy-massage.jpg'
-  },
-  {
-    title: 'Cleanse programmes',
-    copy: '7, 15 and 30-day guided programmes combining diet, herbs and hydrotherapy sessions.',
-    image: '/images/cleanse-programmes.jpg'
-  }
-]
+import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
+import { services } from '../data/services.js'
 
 const testimonials = [
   { quote: 'Add a real client testimonial here from makedah.com.', name: 'Client, Camberwell' },
@@ -77,16 +56,25 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="font-display text-2xl text-moss mb-10">Ways to work together</h2>
         <div className="grid sm:grid-cols-2 gap-6">
-          {services.map((s) => (
-            <div key={s.title} className="bg-cream border border-moss/10 rounded-xl p-6">
-              <img
-                src={s.image}
-                alt={s.title}
-                className="w-full aspect-[16/9] object-cover rounded-lg mb-4"
-              />
+          {services.slice(0, 4).map((s) => (
+            <Link
+              key={s.slug}
+              to={`/services/${s.slug}`}
+              className="bg-cream border border-moss/10 rounded-xl p-6 block hover:border-ochre/40 transition-colors"
+            >
+              {s.image ? (
+                <img
+                  src={s.image}
+                  alt={s.title}
+                  className="w-full aspect-[16/9] object-cover rounded-lg mb-4"
+                />
+              ) : (
+                <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" variant="herb" />
+              )}
               <h3 className="font-display text-lg text-moss mb-2">{s.title}</h3>
-              <p className="text-sm text-ink/70">{s.copy}</p>
-            </div>
+              <p className="text-sm text-ink/70">{s.shortCopy}</p>
+              <span className="inline-block mt-3 text-xs font-mono text-ochre">Learn more →</span>
+            </Link>
           ))}
         </div>
         <Link to="/services" className="inline-block mt-8 text-sm font-mono tracking-wide text-ochre hover:text-moss">

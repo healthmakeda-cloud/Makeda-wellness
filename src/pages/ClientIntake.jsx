@@ -299,7 +299,7 @@ export default function ClientIntake() {
             <div>
               <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">WHICH SERVICE(S) ARE YOU HERE FOR?</p>
               <div className="grid sm:grid-cols-2 gap-2">
-                {['Colon Hydrotherapy', 'Herbal Medicine', 'Aromatherapy Massage', 'Cleanse Programme', 'Gut & Lab Testing'].map((s) => (
+                {['Colon Hydrotherapy', 'Herbal Medicine', 'Mind Reset System', 'Cleanse Programme', 'Gut & Lab Testing'].map((s) => (
                   <label key={s} className="flex items-center gap-2 text-sm text-ink/80">
                     <input type="checkbox" checked={form.servicesInterested.includes(s)} onChange={() => toggleFlag('servicesInterested', s)} />
                     {s}
