@@ -184,6 +184,7 @@ export default function Admin() {
                     <Row label="DERMATOLOGICAL" value={s.dermatological_notes} />
                     <Row label="MUSCULOSKELETAL" value={s.musculoskeletal_notes} />
                     <Row label="MUSCULOSKELETAL FLAGS" value={(s.musculoskeletal_flags || []).join(', ') || 'None'} />
+                    <Row label="NERVOUS SYSTEM" value={s.nervous_system_notes} />
 
                     <SectionTitle>WOMEN'S HEALTH & MENOPAUSE</SectionTitle>
                     {s.sex === 'M' ? (

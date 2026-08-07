@@ -12,6 +12,7 @@ export const locations = [
     area: 'Hammersmith',
     services: null,
     image: '/images/brackenbury.jpg',
+    bookingUrl: 'https://brackenburyclinic.janeapp.co.uk/#/staff_member/0177f8a8-067e-722c-a0a2-01269a16bfd6',
     variant: 'water'
   },
   {

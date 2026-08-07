@@ -4,11 +4,11 @@ import { NavLink } from 'react-router-dom'
 const links = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
-  { to: '/services', label: 'Services' },
+  { to: '/method', label: 'The Makéda Method™' },
+  { to: '/herbal-dispensary', label: 'Herbal Dispensary' },
+  { to: '/colon-hydrotherapy', label: 'Colon Hydrotherapy' },
   { to: '/shop', label: 'Shop' },
   { to: '/client-intake', label: 'Your health journey' },
-  { to: '/vlog', label: 'Vlog' },
-  { to: '/members', label: 'Members' },
   { to: '/contact', label: 'Contact' }
 ]
 

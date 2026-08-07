@@ -27,6 +27,7 @@ const initialForm = {
   gastrointestinalGate: '', gastrointestinalNotes: '', gastrointestinalFlags: [],
   dermatologicalGate: '', dermatologicalNotes: '',
   musculoskeletalGate: '', musculoskeletalNotes: '', musculoskeletalFlags: [],
+  nervousSystemGate: '', nervousSystemNotes: '',
   womenPainfulPeriods: false, womenLastPeriodDate: '', womenVaginalDischarge: false,
   womenThrush: false, womenPregnant: false, womenComplicatedPregnancy: false,
   menopauseStatus: '', menopauseSymptoms: [],
@@ -62,8 +63,9 @@ function YesNo({ checked, onChange, label }) {
 
 function FlagGroup({ title, gateKey, notesKey, flagsKey, flags, form, update, toggleFlag, hint }) {
   const setGate = (value) => {
-    update(gateKey, value)
-    if (value === 'no') {
+    const next = form[gateKey] === value ? '' : value
+    update(gateKey, next)
+    if (next === 'no' || next === '') {
       update(notesKey, '')
       update(flagsKey, [])
     }
@@ -76,15 +78,16 @@ function FlagGroup({ title, gateKey, notesKey, flagsKey, flags, form, update, to
           <p className="font-mono text-xs tracking-wide text-moss/70">{title}</p>
           {hint && <p className="text-xs text-ink/40 italic mt-0.5">{hint}</p>}
         </div>
-        <select
-          className="rounded-md border border-moss/20 bg-cream px-2 py-1.5 text-sm text-ink"
-          value={form[gateKey]}
-          onChange={(e) => setGate(e.target.value)}
-        >
-          <option value="">Select</option>
-          <option value="no">No</option>
-          <option value="yes">Yes</option>
-        </select>
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <label className="flex items-center gap-1.5 text-sm text-ink/80">
+            <input type="checkbox" checked={form[gateKey] === 'yes'} onChange={() => setGate('yes')} />
+            Yes
+          </label>
+          <label className="flex items-center gap-1.5 text-sm text-ink/80">
+            <input type="checkbox" checked={form[gateKey] === 'no'} onChange={() => setGate('no')} />
+            No
+          </label>
+        </div>
       </div>
 
       {form[gateKey] === 'yes' && (
@@ -201,6 +204,7 @@ export default function ClientIntake() {
       gastrointestinal_notes: form.gastrointestinalNotes, gastrointestinal_flags: form.gastrointestinalFlags,
       dermatological_notes: form.dermatologicalNotes,
       musculoskeletal_notes: form.musculoskeletalNotes, musculoskeletal_flags: form.musculoskeletalFlags,
+      nervous_system_notes: form.nervousSystemNotes,
       women_painful_periods: form.womenPainfulPeriods, women_last_period_date: form.womenLastPeriodDate || null,
       women_vaginal_discharge: form.womenVaginalDischarge, women_thrush: form.womenThrush,
       women_pregnant: form.womenPregnant, women_complicated_pregnancy: form.womenComplicatedPregnancy,
@@ -248,9 +252,14 @@ export default function ClientIntake() {
     <div className="max-w-2xl mx-auto px-6 py-16">
       <p className="font-mono text-xs tracking-widest text-ochre mb-4">YOUR HEALTH JOURNEY</p>
       <h1 className="font-display text-3xl text-moss mb-2">Before your first session</h1>
-      <p className="text-ink/70 mb-10 text-sm">
+      <p className="text-ink/70 mb-6 text-sm">
         This mirrors the paper form used in clinic — contact and GP details, health history by system, then consent.
       </p>
+
+      <div className="bg-cream border border-moss/10 rounded-lg px-4 py-3 mb-10 text-sm text-ink/80">
+        <span className="font-mono text-xs tracking-wide text-ochre">CONFIDENTIAL — </span>
+        Everything you share here is held in strict confidence and is only ever seen by Makéda and authorised clinic staff.
+      </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-10 font-mono text-xs text-moss/60">
         <span className={step === 1 ? 'text-ochre' : ''}>01 Contact & GP</span>
@@ -363,8 +372,21 @@ export default function ClientIntake() {
             <FlagGroup title="CARDIOVASCULAR — e.g. high blood pressure, poor circulation, angina" gateKey="cardiovascularGate" notesKey="cardiovascularNotes" flagsKey="cardiovascularFlags" flags={cardiovascularFlags} form={form} update={update} toggleFlag={toggleFlag} />
             <FlagGroup title="GENITOURINARY — e.g. kidney infection, kidney stones" gateKey="genitourinaryGate" notesKey="genitourinaryNotes" flagsKey="genitourinaryFlags" flags={genitourinaryFlags} form={form} update={update} toggleFlag={toggleFlag} />
             <FlagGroup title="GASTROINTESTINAL — e.g. colitis, constipation, liver problems, rectal bleeding" gateKey="gastrointestinalGate" notesKey="gastrointestinalNotes" flagsKey="gastrointestinalFlags" flags={gastrointestinalFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <div className="ml-1 pl-4 border-l-2 border-moss/10">
+              <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">BOWEL MOVEMENTS</p>
+              <div className="grid sm:grid-cols-2 gap-2">
+                <YesNo checked={form.bowelDaily} onChange={(v) => update('bowelDaily', v)} label="Daily bowel movements" />
+                <YesNo checked={form.bowelDifficulty} onChange={(v) => update('bowelDifficulty', v)} label="Any difficulty passing" />
+                <YesNo checked={form.bowelFlatulence} onChange={(v) => update('bowelFlatulence', v)} label="Flatulence / bloating" />
+              </div>
+              <div className="mt-3 grid sm:grid-cols-2 gap-4">
+                <Field label="NUMBER OF BOWEL MOVEMENTS PER DAY"><input className={inputClass} value={form.bowelNumberPerDay} onChange={(e) => update('bowelNumberPerDay', e.target.value)} /></Field>
+                <Field label="AVERAGE CONSISTENCY"><input className={inputClass} value={form.bowelConsistency} onChange={(e) => update('bowelConsistency', e.target.value)} /></Field>
+              </div>
+            </div>
             <FlagGroup title="DERMATOLOGICAL — e.g. dry skin, eczema, psoriasis, itching" gateKey="dermatologicalGate" notesKey="dermatologicalNotes" flagsKey="dermatologicalFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
             <FlagGroup title="MUSCULOSKELETAL — e.g. arthritis, rheumatism, low back pain, swollen joints" gateKey="musculoskeletalGate" notesKey="musculoskeletalNotes" flagsKey="musculoskeletalFlags" flags={musculoskeletalFlags} form={form} update={update} toggleFlag={toggleFlag} />
+            <FlagGroup title="NERVOUS SYSTEM — e.g. stress, anxiety, headaches, sleep, memory" gateKey="nervousSystemGate" notesKey="nervousSystemNotes" flagsKey="nervousSystemFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
 
             <RootDivider />
 
@@ -434,25 +456,20 @@ export default function ClientIntake() {
             <RootDivider />
 
             <div>
-              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">BOWEL MOVEMENTS & DIET</p>
+              <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">DIET</p>
               <div className="grid sm:grid-cols-2 gap-2">
-                <YesNo checked={form.bowelDaily} onChange={(v) => update('bowelDaily', v)} label="Daily bowel movements" />
-                <YesNo checked={form.bowelDifficulty} onChange={(v) => update('bowelDifficulty', v)} label="Any difficulty passing" />
-                <YesNo checked={form.bowelFlatulence} onChange={(v) => update('bowelFlatulence', v)} label="Flatulence / bloating" />
                 <YesNo checked={form.dietVegetarianVegan} onChange={(v) => update('dietVegetarianVegan', v)} label="Vegetarian / vegan" />
                 <YesNo checked={form.dietFoodCravings} onChange={(v) => update('dietFoodCravings', v)} label="Food cravings" />
                 <YesNo checked={form.dietEatingDisorder} onChange={(v) => update('dietEatingDisorder', v)} label="History of an eating disorder" />
               </div>
               <div className="mt-3 grid sm:grid-cols-2 gap-4">
-                <Field label="NUMBER OF BOWEL MOVEMENTS PER DAY"><input className={inputClass} value={form.bowelNumberPerDay} onChange={(e) => update('bowelNumberPerDay', e.target.value)} /></Field>
-                <Field label="AVERAGE CONSISTENCY"><input className={inputClass} value={form.bowelConsistency} onChange={(e) => update('bowelConsistency', e.target.value)} /></Field>
                 <Field label="IF FOOD CRAVINGS, WHAT FOR"><input className={inputClass} value={form.dietFoodCravingsDetail} onChange={(e) => update('dietFoodCravingsDetail', e.target.value)} /></Field>
                 <Field label="ESTIMATED DAILY FLUID INTAKE"><input className={inputClass} value={form.dietDailyFluidIntake} onChange={(e) => update('dietDailyFluidIntake', e.target.value)} /></Field>
               </div>
             </div>
 
             <div className="flex justify-between">
-              <button type="button" onClick={() => goToStep(1)} className="text-moss text-sm">Back</button>
+              <button type="button" onClick={() => goToStep(1)} className="border-2 border-ochre text-ochre font-body text-sm px-5 py-2.5 rounded hover:bg-ochre/10 transition-colors">Back</button>
               <button type="button" onClick={() => goToStep(3)} className="bg-moss text-linen px-6 py-3 rounded text-sm">Continue</button>
             </div>
           </div>
@@ -507,7 +524,7 @@ export default function ClientIntake() {
             </div>
 
             <div className="flex justify-between">
-              <button type="button" onClick={() => goToStep(2)} className="text-moss text-sm">Back</button>
+              <button type="button" onClick={() => goToStep(2)} className="border-2 border-ochre text-ochre font-body text-sm px-5 py-2.5 rounded hover:bg-ochre/10 transition-colors">Back</button>
               <button type="submit" disabled={submitting} className="bg-ochre text-cream px-6 py-3 rounded text-sm disabled:opacity-50">
                 {submitting ? 'Submitting…' : 'Submit health journey form'}
               </button>

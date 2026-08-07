@@ -5,10 +5,10 @@ export default function RootDivider() {
         <path
           d="M0,12 C40,2 60,22 100,12 C140,2 160,22 220,12"
           fill="none"
-          stroke="#B98F6F"
+          stroke="#8D9472"
           strokeWidth="2"
         />
-        <circle cx="100" cy="12" r="3.5" fill="#C16B3F" />
+        <circle cx="100" cy="12" r="3.5" fill="#A66A4A" />
       </svg>
     </div>
   )

@@ -1,6 +1,6 @@
 export default function RootMark({ className = 'h-10 w-10', variant = 'light' }) {
-  const line = variant === 'light' ? '#2A1E42' : '#EDE4CF'
-  const accent = '#C16B3F'
+  const line = variant === 'light' ? '#3A3A38' : '#E7EEE6'
+  const accent = '#A66A4A'
 
   return (
     <svg viewBox="0 0 380 380" className={className} role="img" aria-label="Makéda Health">

@@ -3,7 +3,7 @@ import { locations } from '../data/locations.js'
 export default function Footer() {
   return (
     <footer className="bg-moss text-linen mt-32">
-      <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-3">
+      <div className="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-4">
         <div className="flex flex-col gap-3">
           <div className="bg-linen rounded-lg p-2 inline-block w-fit">
             <img src="/images/logo-full.jpg" alt="Makéda's Health" className="h-16 w-auto rounded" />
@@ -31,6 +31,15 @@ export default function Footer() {
           <ul className="space-y-1 text-sm text-linen/80">
             <li><a href="/contact" className="hover:text-linen">Contact & booking</a></li>
             <li><a href="/client-intake" className="hover:text-linen">Your health journey</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p className="font-mono text-xs tracking-widest text-ochre mb-3">MORE</p>
+          <ul className="space-y-1 text-sm text-linen/80">
+            <li><a href="/services" className="hover:text-linen">All services</a></li>
+            <li><a href="/members" className="hover:text-linen">Members</a></li>
+            <li><a href="/vlog" className="hover:text-linen">Vlog</a></li>
           </ul>
         </div>
       </div>

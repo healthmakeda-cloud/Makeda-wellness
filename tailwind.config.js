@@ -4,12 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        moss: '#2A1E42',
-        ink: '#241A33',
-        linen: '#F5F0E6',
-        ochre: '#C16B3F',
-        sage: '#B98F6F',
-        cream: '#EDE4CF'
+        moss: '#3A3A38',
+        ink: '#232220',
+        linen: '#F7F4EE',
+        ochre: '#A66A4A',
+        sage: '#8D9472',
+        cream: '#E7EEE6',
+        amber: '#C8A76B',
+        bronze: '#787058'
       },
       fontFamily: {
         display: ['Fraunces', 'serif'],

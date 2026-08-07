@@ -6,6 +6,7 @@ export const services = [
   {
     slug: 'colon-hydrotherapy',
     title: 'Colon Hydrotherapy',
+    page: '/colon-hydrotherapy',
     shortCopy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.',
     image: '/images/colon-hydrotherapy.jpg',
     fullDescription: [
@@ -17,11 +18,15 @@ export const services = [
   {
     slug: 'herbal-medicine',
     title: 'Herbal Medicine',
-    shortCopy: 'Plant-based remedies tailored to your history and constitution, not a one-size prescription.',
+    page: '/herbal-dispensary',
+    shortCopy: 'Most clinics begin with symptoms. The Makéda Method™ begins with your story.',
     image: '/images/herbal-medicine.jpeg',
     fullDescription: [
-      'A full case history is taken before any remedy is prescribed — your current health, past history, lifestyle, and what brought you in. From there, a formula is built specifically for you, not pulled from a generic template.',
-      'Follow-up consultations track how your formula is working and adjust it as things change.'
+      'Every healing journey begins with a story. Every personalised medicine begins with understanding it. Every health story is unique, and your herbal prescription should be too.',
+      'Once your practitioner has carefully explored your health story and developed your personalised treatment plan, the next step is the Herbal Dispensary — where your bespoke natural medicine is expertly prepared.',
+      'Most herbal medicines are given as a liquid tincture, taken in 5ml or 7.5ml doses two or three times daily. You may also be prescribed a herbal tea, tablets, ointment, cream or lotion.',
+      "Our Herbal Dispensary is where your health story becomes a bespoke botanical prescription — crafted with care, precision and purpose to support your body's natural capacity to restore balance and thrive.",
+      'As your health improves and your needs change, your herbal formula can be refined and adjusted, ensuring your treatment evolves alongside your healing journey.'
     ],
     cta: { label: 'Book a consultation', to: '/contact' }
   },

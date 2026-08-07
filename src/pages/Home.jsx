@@ -68,7 +68,7 @@ export default function Home() {
           {services.slice(0, 4).map((s) => (
             <Link
               key={s.slug}
-              to={`/services/${s.slug}`}
+              to={s.page || `/services/${s.slug}`}
               className="bg-cream border border-moss/10 rounded-xl p-6 block hover:border-ochre/40 transition-colors"
             >
               {s.image ? (

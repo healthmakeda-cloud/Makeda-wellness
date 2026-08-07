@@ -12,7 +12,7 @@ const columns = [
   'genitourinary_notes', 'genitourinary_flags',
   'gastrointestinal_notes', 'gastrointestinal_flags',
   'dermatological_notes',
-  'musculoskeletal_notes', 'musculoskeletal_flags',
+  'musculoskeletal_notes', 'musculoskeletal_flags', 'nervous_system_notes',
   'women_painful_periods', 'women_last_period_date', 'women_vaginal_discharge',
   'women_thrush', 'women_pregnant', 'women_complicated_pregnancy',
   'menopause_status', 'menopause_symptoms',

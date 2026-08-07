@@ -5,6 +5,9 @@ import Home from './pages/Home.jsx'
 import About from './pages/About.jsx'
 import Services from './pages/Services.jsx'
 import ServiceDetail from './pages/ServiceDetail.jsx'
+import HerbalDispensary from './pages/HerbalDispensary.jsx'
+import ColonHydrotherapyPage from './pages/ColonHydrotherapyPage.jsx'
+import Method from './pages/Method.jsx'
 import ClientIntake from './pages/ClientIntake.jsx'
 import Shop from './pages/Shop.jsx'
 import ShopSuccess from './pages/ShopSuccess.jsx'
@@ -23,6 +26,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/method" element={<Method />} />
+          <Route path="/herbal-dispensary" element={<HerbalDispensary />} />
+          <Route path="/colon-hydrotherapy" element={<ColonHydrotherapyPage />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/client-intake" element={<ClientIntake />} />
