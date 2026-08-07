@@ -52,9 +52,7 @@ export const products = [
     category: 'Supplements',
     description: 'A practitioner formula supporting healthy bowel and liver function, with artichoke, cayenne and ginger. Take one capsule three times a day after food.',
     image: '/images/impilo-colon-health-support.jpg',
-    // ⚠️ PLACEHOLDER PRICE — replace with the real price before this goes live.
-    priceGBP: 2500,
-    priceIsPlaceholder: true
+    priceGBP: 2000
   },
   {
     id: 'perimenopause-restore-complex',
@@ -62,8 +60,6 @@ export const products = [
     category: 'Supplements',
     description: 'Hormonal support for balance, vitality and wellbeing — a signature botanical blend of black cohosh, wild yam, ashwagandha, bacopa, dandelion root and schisandra. 60 vegan capsules.',
     image: '/images/perimenopause-restore-complex.jpg',
-    // ⚠️ PLACEHOLDER PRICE — replace with the real price before this goes live.
-    priceGBP: 2500,
-    priceIsPlaceholder: true
+    priceGBP: 2200
   }
 ]

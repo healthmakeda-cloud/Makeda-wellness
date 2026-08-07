@@ -28,6 +28,7 @@ const initialForm = {
   dermatologicalGate: '', dermatologicalNotes: '',
   musculoskeletalGate: '', musculoskeletalNotes: '', musculoskeletalFlags: [],
   nervousSystemGate: '', nervousSystemNotes: '',
+  stressLevel: 5, happinessLevel: 5, peacefulnessLevel: 5,
   womenPainfulPeriods: false, womenLastPeriodDate: '', womenVaginalDischarge: false,
   womenThrush: false, womenPregnant: false, womenComplicatedPregnancy: false,
   menopauseStatus: '', menopauseSymptoms: [],
@@ -111,6 +112,33 @@ function FlagGroup({ title, gateKey, notesKey, flagsKey, flags, form, update, to
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+
+function RatingScale({ label, lowLabel, highLabel, value, onChange }) {
+  return (
+    <div>
+      <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`h-9 w-9 rounded-full text-sm font-body transition-colors ${
+              value === n ? 'bg-ochre text-linen' : 'bg-linen border border-moss/20 text-ink/70 hover:border-ochre'
+            }`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+      <div className="flex justify-between mt-1 text-[10px] text-ink/40 font-mono max-w-[420px]">
+        <span>1 — {lowLabel}</span>
+        <span>10 — {highLabel}</span>
+      </div>
     </div>
   )
 }
@@ -205,6 +233,8 @@ export default function ClientIntake() {
       dermatological_notes: form.dermatologicalNotes,
       musculoskeletal_notes: form.musculoskeletalNotes, musculoskeletal_flags: form.musculoskeletalFlags,
       nervous_system_notes: form.nervousSystemNotes,
+      stress_level: form.stressLevel, happiness_level: form.happinessLevel,
+      peacefulness_level: form.peacefulnessLevel,
       women_painful_periods: form.womenPainfulPeriods, women_last_period_date: form.womenLastPeriodDate || null,
       women_vaginal_discharge: form.womenVaginalDischarge, women_thrush: form.womenThrush,
       women_pregnant: form.womenPregnant, women_complicated_pregnancy: form.womenComplicatedPregnancy,
@@ -387,6 +417,29 @@ export default function ClientIntake() {
             <FlagGroup title="DERMATOLOGICAL — e.g. dry skin, eczema, psoriasis, itching" gateKey="dermatologicalGate" notesKey="dermatologicalNotes" flagsKey="dermatologicalFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
             <FlagGroup title="MUSCULOSKELETAL — e.g. arthritis, rheumatism, low back pain, swollen joints" gateKey="musculoskeletalGate" notesKey="musculoskeletalNotes" flagsKey="musculoskeletalFlags" flags={musculoskeletalFlags} form={form} update={update} toggleFlag={toggleFlag} />
             <FlagGroup title="NERVOUS SYSTEM — e.g. stress, anxiety, headaches, sleep, memory" gateKey="nervousSystemGate" notesKey="nervousSystemNotes" flagsKey="nervousSystemFlags" flags={[]} form={form} update={update} toggleFlag={toggleFlag} />
+            <div className="ml-1 pl-4 border-l-2 border-moss/10 space-y-4">
+              <RatingScale
+                label="RATE YOUR STRESS LEVELS"
+                lowLabel="Low"
+                highLabel="High"
+                value={form.stressLevel}
+                onChange={(v) => update('stressLevel', v)}
+              />
+              <RatingScale
+                label="HOW HAPPY ARE YOU?"
+                lowLabel="Not at all"
+                highLabel="Very happy"
+                value={form.happinessLevel}
+                onChange={(v) => update('happinessLevel', v)}
+              />
+              <RatingScale
+                label="HOW PEACEFUL ARE YOU?"
+                lowLabel="Not at all"
+                highLabel="Very peaceful"
+                value={form.peacefulnessLevel}
+                onChange={(v) => update('peacefulnessLevel', v)}
+              />
+            </div>
 
             <RootDivider />
 

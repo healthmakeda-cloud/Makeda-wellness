@@ -13,6 +13,7 @@ const columns = [
   'gastrointestinal_notes', 'gastrointestinal_flags',
   'dermatological_notes',
   'musculoskeletal_notes', 'musculoskeletal_flags', 'nervous_system_notes',
+  'stress_level', 'happiness_level', 'peacefulness_level',
   'women_painful_periods', 'women_last_period_date', 'women_vaginal_discharge',
   'women_thrush', 'women_pregnant', 'women_complicated_pregnancy',
   'menopause_status', 'menopause_symptoms',
@@ -41,10 +42,22 @@ export default async function handler(req, res) {
   }
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  const { data, error } = await supabase
-    .from('intake_submissions')
-    .select('*')
-    .order('created_at', { ascending: false })
+
+  // Optional filters passed from the back office (condition / sex), so the
+  // export matches whatever the practitioner is currently looking at.
+  const url = new URL(req.url, `https://${req.headers.host}`)
+  const condition = url.searchParams.get('condition')
+  const sex = url.searchParams.get('sex')
+
+  let query = supabase.from('intake_submissions').select('*')
+  if (sex === 'F' || sex === 'M') query = query.eq('sex', sex)
+  if (condition === 'flagged') {
+    query = query.eq('status', 'flagged')
+  } else if (condition && columns.includes(condition)) {
+    query = query.not(condition, 'is', null).neq(condition, '')
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false })
 
   if (error) {
     res.status(500).json({ error: error.message })

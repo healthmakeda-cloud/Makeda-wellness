@@ -65,7 +65,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="font-display text-2xl text-moss mb-10">Ways to work together</h2>
         <div className="grid sm:grid-cols-2 gap-6">
-          {services.slice(0, 4).map((s) => (
+          {services.filter((s) => s.onHome).map((s) => (
             <Link
               key={s.slug}
               to={s.page || `/services/${s.slug}`}

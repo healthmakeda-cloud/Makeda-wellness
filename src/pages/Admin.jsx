@@ -1,16 +1,49 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
+// Only renders when there's an actual answer — keeps the detail view
+// condensed instead of a wall of blank fields.
 function Row({ label, value }) {
+  const isEmpty =
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0)
+  if (isEmpty) return null
+
+  const display = value === true ? 'Yes' : Array.isArray(value) ? value.join(', ') : value
   return (
     <p className="text-sm text-ink/80">
-      <span className="font-mono text-xs text-ochre">{label}</span> — {value === true ? 'Yes' : value === false ? 'No' : (value || '—')}
+      <span className="font-mono text-xs text-ochre">{label}</span> — {display}
     </p>
   )
 }
 
-function SectionTitle({ children }) {
-  return <p className="font-mono text-xs tracking-widest text-moss/60 mt-5 mb-2 first:mt-0">{children}</p>
+// Only renders its heading if at least one child Row produced output.
+function Section({ title, children }) {
+  const hasContent = Array.isArray(children)
+    ? children.some((c) => c !== null && c !== false && c !== undefined)
+    : Boolean(children)
+  if (!hasContent) return null
+  return (
+    <>
+      <p className="font-mono text-xs tracking-widest text-moss/60 mt-5 mb-2 first:mt-0">{title}</p>
+      {children}
+    </>
+  )
 }
+
+const CONDITION_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'flagged', label: 'Flagged only' },
+  { key: 'cardiovascular_notes', label: 'Cardiovascular' },
+  { key: 'gastrointestinal_notes', label: 'Gastrointestinal' },
+  { key: 'respiratory_notes', label: 'Respiratory' },
+  { key: 'genitourinary_notes', label: 'Genitourinary' },
+  { key: 'dermatological_notes', label: 'Dermatological' },
+  { key: 'musculoskeletal_notes', label: 'Musculoskeletal' },
+  { key: 'nervous_system_notes', label: 'Nervous system' }
+]
 
 export default function Admin() {
   const [password, setPassword] = useState(() => sessionStorage.getItem('makeda_admin_pw') || '')
@@ -21,6 +54,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [openId, setOpenId] = useState(null)
+  const [conditionFilter, setConditionFilter] = useState('all')
+  const [sexFilter, setSexFilter] = useState('all')
 
   const load = async (pw) => {
     setLoading(true)
@@ -52,8 +87,25 @@ export default function Admin() {
     if (password) load(password)
   }, [])
 
+  const filteredSubmissions = useMemo(() => {
+    return submissions.filter((s) => {
+      if (sexFilter !== 'all' && s.sex !== sexFilter) return false
+      if (conditionFilter === 'all') return true
+      if (conditionFilter === 'flagged') return s.status === 'flagged'
+      const val = s[conditionFilter]
+      return val && String(val).trim() !== ''
+    })
+  }, [submissions, conditionFilter, sexFilter])
+
   const handleExport = async (kind) => {
-    const url = kind === 'orders' ? '/api/export-orders' : '/api/export'
+    const params = new URLSearchParams()
+    if (kind === 'submissions') {
+      if (conditionFilter !== 'all') params.set('condition', conditionFilter)
+      if (sexFilter !== 'all') params.set('sex', sexFilter)
+    }
+    const base = kind === 'orders' ? '/api/export-orders' : '/api/export'
+    const url = params.toString() ? `${base}?${params}` : base
+
     const res = await fetch(url, { headers: { 'x-admin-password': password } })
     if (!res.ok) {
       setError('Export failed — try refreshing and logging in again.')
@@ -125,14 +177,57 @@ export default function Admin() {
 
       {tab === 'submissions' && (
         <div>
-          <div className="flex justify-end mb-4">
-            <button onClick={() => handleExport('submissions')} className="bg-ochre text-cream px-5 py-2.5 rounded text-sm">
-              Export all to CSV
+          <div className="bg-cream border border-moss/10 rounded-lg p-4 mb-6 space-y-3">
+            <div>
+              <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">FILTER BY CONDITION</p>
+              <div className="flex flex-wrap gap-1.5">
+                {CONDITION_FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setConditionFilter(f.key)}
+                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+                      conditionFilter === f.key
+                        ? 'bg-ochre text-linen'
+                        : 'bg-linen border border-moss/20 text-ink/70 hover:border-ochre'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">FILTER BY SEX</p>
+              <div className="flex flex-wrap gap-1.5">
+                {[{ k: 'all', l: 'All' }, { k: 'F', l: 'Female' }, { k: 'M', l: 'Male' }].map((o) => (
+                  <button
+                    key={o.k}
+                    onClick={() => setSexFilter(o.k)}
+                    className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+                      sexFilter === o.k
+                        ? 'bg-ochre text-linen'
+                        : 'bg-linen border border-moss/20 text-ink/70 hover:border-ochre'
+                    }`}
+                  >
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-ink/60">
+              Showing {filteredSubmissions.length} of {submissions.length}
+            </p>
+            <button onClick={() => handleExport('submissions')} className="bg-ochre text-linen px-5 py-2.5 rounded text-sm">
+              Export {conditionFilter === 'all' && sexFilter === 'all' ? 'all' : 'filtered'} to CSV
             </button>
           </div>
+
           <div className="space-y-3">
-            {submissions.length === 0 && <p className="text-sm text-ink/60">No submissions yet.</p>}
-            {submissions.map((s) => (
+            {filteredSubmissions.length === 0 && <p className="text-sm text-ink/60">No submissions match these filters.</p>}
+            {filteredSubmissions.map((s) => (
               <div key={s.id} className="bg-cream border border-moss/10 rounded-lg">
                 <button
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
@@ -149,82 +244,95 @@ export default function Admin() {
 
                 {openId === s.id && (
                   <div className="px-5 pb-5 space-y-1 border-t border-moss/10 pt-4">
-                    <SectionTitle>CONTACT</SectionTitle>
-                    <Row label="NAME" value={`${s.first_name || ''} ${s.surname || ''}`} />
-                    <Row label="DOB" value={s.dob} />
-                    <Row label="SEX" value={s.sex} />
-                    <Row label="ADDRESS" value={s.address} />
-                    <Row label="POSTCODE" value={s.postcode} />
-                    <Row label="EMAIL" value={s.email} />
-                    <Row label="MOBILE" value={s.mobile} />
-                    <Row label="LANDLINE" value={s.landline} />
+                    <Section title="CONTACT">
+                      <Row label="NAME" value={`${s.first_name || ''} ${s.surname || ''}`.trim()} />
+                      <Row label="DOB" value={s.dob} />
+                      <Row label="SEX" value={s.sex} />
+                      <Row label="ADDRESS" value={s.address} />
+                      <Row label="POSTCODE" value={s.postcode} />
+                      <Row label="EMAIL" value={s.email} />
+                      <Row label="MOBILE" value={s.mobile} />
+                      <Row label="LANDLINE" value={s.landline} />
+                    </Section>
 
-                    <SectionTitle>GP</SectionTitle>
-                    <Row label="GP NAME" value={s.gp_name} />
-                    <Row label="GP TEL" value={s.gp_tel} />
-                    <Row label="GP ADDRESS" value={s.gp_address} />
-                    <Row label="PERMISSION TO CONTACT GP" value={s.gp_contact_consent} />
+                    <Section title="GP">
+                      <Row label="GP NAME" value={s.gp_name} />
+                      <Row label="GP TEL" value={s.gp_tel} />
+                      <Row label="GP ADDRESS" value={s.gp_address} />
+                      <Row label="PERMISSION TO CONTACT GP" value={s.gp_contact_consent} />
+                    </Section>
 
-                    <SectionTitle>PRESENTING COMPLAINT</SectionTitle>
-                    <Row label="SERVICES INTERESTED" value={(s.services_interested || []).join(', ') || 'None selected'} />
-                    <Row label="DESCRIPTION OF AILMENT" value={s.description_of_ailment} />
-                    <Row label="EXISTING OR NEW" value={s.existing_or_new} />
-                    <Row label="MEDICATIONS" value={(s.medications_selected || []).join(', ') || (s.medications ? s.medications : 'None selected')} />
-                    <Row label="OTHER MEDICATIONS" value={s.medications_other} />
-                    <Row label="SURGERIES (LAST 3 MONTHS)" value={s.surgeries_last_3_months} />
+                    <Section title="PRESENTING COMPLAINT">
+                      <Row label="SERVICES INTERESTED" value={s.services_interested} />
+                      <Row label="HEALTH STORY" value={s.description_of_ailment} />
+                      <Row label="EXISTING OR NEW" value={s.existing_or_new} />
+                      <Row label="MEDICATIONS" value={s.medications_selected} />
+                      <Row label="OTHER MEDICATIONS" value={s.medications_other} />
+                      <Row label="SURGERIES (LAST 3 MONTHS)" value={s.surgeries_last_3_months} />
+                    </Section>
 
-                    <SectionTitle>HEALTH HISTORY BY SYSTEM</SectionTitle>
-                    <Row label="RESPIRATORY" value={s.respiratory_notes} />
-                    <Row label="CARDIOVASCULAR" value={s.cardiovascular_notes} />
-                    <Row label="CARDIOVASCULAR FLAGS" value={(s.cardiovascular_flags || []).join(', ') || 'None'} />
-                    <Row label="GENITOURINARY" value={s.genitourinary_notes} />
-                    <Row label="GENITOURINARY FLAGS" value={(s.genitourinary_flags || []).join(', ') || 'None'} />
-                    <Row label="GASTROINTESTINAL" value={s.gastrointestinal_notes} />
-                    <Row label="GASTROINTESTINAL FLAGS" value={(s.gastrointestinal_flags || []).join(', ') || 'None'} />
-                    <Row label="DERMATOLOGICAL" value={s.dermatological_notes} />
-                    <Row label="MUSCULOSKELETAL" value={s.musculoskeletal_notes} />
-                    <Row label="MUSCULOSKELETAL FLAGS" value={(s.musculoskeletal_flags || []).join(', ') || 'None'} />
-                    <Row label="NERVOUS SYSTEM" value={s.nervous_system_notes} />
+                    <Section title="HEALTH HISTORY BY SYSTEM">
+                      <Row label="RESPIRATORY" value={s.respiratory_notes} />
+                      <Row label="CARDIOVASCULAR" value={s.cardiovascular_notes} />
+                      <Row label="CARDIOVASCULAR FLAGS" value={s.cardiovascular_flags} />
+                      <Row label="GENITOURINARY" value={s.genitourinary_notes} />
+                      <Row label="GENITOURINARY FLAGS" value={s.genitourinary_flags} />
+                      <Row label="GASTROINTESTINAL" value={s.gastrointestinal_notes} />
+                      <Row label="GASTROINTESTINAL FLAGS" value={s.gastrointestinal_flags} />
+                      <Row label="DERMATOLOGICAL" value={s.dermatological_notes} />
+                      <Row label="MUSCULOSKELETAL" value={s.musculoskeletal_notes} />
+                      <Row label="MUSCULOSKELETAL FLAGS" value={s.musculoskeletal_flags} />
+                      <Row label="NERVOUS SYSTEM" value={s.nervous_system_notes} />
+                      <Row label="STRESS LEVEL (1–10)" value={s.stress_level} />
+                      <Row label="HAPPINESS (1–10)" value={s.happiness_level} />
+                      <Row label="PEACEFULNESS (1–10)" value={s.peacefulness_level} />
+                    </Section>
 
-                    <SectionTitle>WOMEN'S HEALTH & MENOPAUSE</SectionTitle>
-                    {s.sex === 'M' ? (
-                      <>
-                        <Row label="PROSTATE PROBLEMS" value={s.men_prostate_problems} />
-                        <Row label="TESTICULAR PAIN OR SWELLING" value={s.men_testicular_pain} />
-                        <Row label="ERECTILE DIFFICULTIES" value={s.men_erectile_difficulties} />
-                        <Row label="LOW LIBIDO" value={s.men_low_libido} />
-                        <Row label="FERTILITY CONCERNS" value={s.men_fertility_concerns} />
-                      </>
-                    ) : (
-                      <>
-                        <Row label="PAINFUL PERIODS" value={s.women_painful_periods} />
-                        <Row label="LAST PERIOD DATE" value={s.women_last_period_date} />
-                        <Row label="VAGINAL DISCHARGE" value={s.women_vaginal_discharge} />
-                        <Row label="THRUSH" value={s.women_thrush} />
-                        <Row label="PREGNANT" value={s.women_pregnant} />
-                        <Row label="COMPLICATED PREGNANCY" value={s.women_complicated_pregnancy} />
-                        <Row label="MENOPAUSE STATUS" value={s.menopause_status} />
-                        <Row label="MENOPAUSE SYMPTOMS" value={(s.menopause_symptoms || []).join(', ') || 'None'} />
-                      </>
-                    )}
+                    <Section title="BOWEL">
+                      <Row label="DAILY BOWEL MOVEMENTS" value={s.bowel_daily} />
+                      <Row label="NUMBER PER DAY" value={s.bowel_number_per_day} />
+                      <Row label="DIFFICULTY PASSING" value={s.bowel_difficulty} />
+                      <Row label="CONSISTENCY" value={s.bowel_consistency} />
+                      <Row label="FLATULENCE / BLOATING" value={s.bowel_flatulence} />
+                    </Section>
 
-                    <SectionTitle>BOWEL & DIET</SectionTitle>
-                    <Row label="DAILY BOWEL MOVEMENTS" value={s.bowel_daily} />
-                    <Row label="NUMBER PER DAY" value={s.bowel_number_per_day} />
-                    <Row label="DIFFICULTY PASSING" value={s.bowel_difficulty} />
-                    <Row label="CONSISTENCY" value={s.bowel_consistency} />
-                    <Row label="FLATULENCE / BLOATING" value={s.bowel_flatulence} />
-                    <Row label="VEGETARIAN / VEGAN" value={s.diet_vegetarian_vegan} />
-                    <Row label="FOOD CRAVINGS" value={s.diet_food_cravings} />
-                    <Row label="CRAVINGS DETAIL" value={s.diet_food_cravings_detail} />
-                    <Row label="DAILY FLUID INTAKE" value={s.diet_daily_fluid_intake} />
-                    <Row label="HISTORY OF EATING DISORDER" value={s.diet_eating_disorder} />
+                    <Section title={s.sex === 'M' ? "MEN'S HEALTH" : "WOMEN'S HEALTH & MENOPAUSE"}>
+                      {s.sex === 'M' ? (
+                        <>
+                          <Row label="PROSTATE PROBLEMS" value={s.men_prostate_problems} />
+                          <Row label="TESTICULAR PAIN OR SWELLING" value={s.men_testicular_pain} />
+                          <Row label="ERECTILE DIFFICULTIES" value={s.men_erectile_difficulties} />
+                          <Row label="LOW LIBIDO" value={s.men_low_libido} />
+                          <Row label="FERTILITY CONCERNS" value={s.men_fertility_concerns} />
+                        </>
+                      ) : (
+                        <>
+                          <Row label="PAINFUL PERIODS" value={s.women_painful_periods} />
+                          <Row label="LAST PERIOD DATE" value={s.women_last_period_date} />
+                          <Row label="VAGINAL DISCHARGE" value={s.women_vaginal_discharge} />
+                          <Row label="THRUSH" value={s.women_thrush} />
+                          <Row label="PREGNANT" value={s.women_pregnant} />
+                          <Row label="COMPLICATED PREGNANCY" value={s.women_complicated_pregnancy} />
+                          <Row label="MENOPAUSE STATUS" value={s.menopause_status} />
+                          <Row label="MENOPAUSE SYMPTOMS" value={s.menopause_symptoms} />
+                        </>
+                      )}
+                    </Section>
 
-                    <SectionTitle>CONSENT</SectionTitle>
-                    <Row label="CONSENT GIVEN" value={s.consent_given} />
-                    <Row label="COLON HYDROTHERAPY CONSENT GIVEN" value={s.ch_consent_given} />
-                    <Row label="SIGNATURE" value={s.signature} />
-                    <Row label="SIGNED DATE" value={s.signed_date} />
+                    <Section title="DIET">
+                      <Row label="VEGETARIAN / VEGAN" value={s.diet_vegetarian_vegan} />
+                      <Row label="FOOD CRAVINGS" value={s.diet_food_cravings} />
+                      <Row label="CRAVINGS DETAIL" value={s.diet_food_cravings_detail} />
+                      <Row label="DAILY FLUID INTAKE" value={s.diet_daily_fluid_intake} />
+                      <Row label="HISTORY OF EATING DISORDER" value={s.diet_eating_disorder} />
+                    </Section>
+
+                    <Section title="CONSENT">
+                      <Row label="CONSENT GIVEN" value={s.consent_given} />
+                      <Row label="COLON HYDROTHERAPY CONSENT" value={s.ch_consent_given} />
+                      <Row label="SIGNATURE" value={s.signature} />
+                      <Row label="SIGNED DATE" value={s.signed_date} />
+                    </Section>
                   </div>
                 )}
               </div>
@@ -236,7 +344,7 @@ export default function Admin() {
       {tab === 'orders' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={() => handleExport('orders')} className="bg-ochre text-cream px-5 py-2.5 rounded text-sm">
+            <button onClick={() => handleExport('orders')} className="bg-ochre text-linen px-5 py-2.5 rounded text-sm">
               Export all to CSV
             </button>
           </div>

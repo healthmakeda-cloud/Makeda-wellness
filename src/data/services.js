@@ -7,6 +7,7 @@ export const services = [
     slug: 'colon-hydrotherapy',
     title: 'Colon Hydrotherapy',
     page: '/colon-hydrotherapy',
+    onHome: true,
     shortCopy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.',
     image: '/images/colon-hydrotherapy.jpg',
     fullDescription: [
@@ -17,8 +18,9 @@ export const services = [
   },
   {
     slug: 'herbal-medicine',
-    title: 'Herbal Medicine',
+    title: 'Herbal Dispensary',
     page: '/herbal-dispensary',
+    onHome: true,
     shortCopy: 'Most clinics begin with symptoms. The Makéda Method™ begins with your story.',
     image: '/images/herbal-medicine.jpeg',
     fullDescription: [
@@ -35,6 +37,7 @@ export const services = [
     title: 'Mind Reset System',
     shortCopy: 'A 90-day mind–gut reset programme, delivered in partnership with Tony Dada.',
     image: null,
+    artVariant: 'herb',
     fullDescription: [
       "The Mind Reset System is a 90-day programme exploring the connection between nervous system stress and gut health — the same link that sits behind so much of Makéda's own approach to digestion and wellbeing.",
       "Makéda works alongside this programme as an affiliate practitioner. [Full programme structure and what's included to be confirmed — please provide the official programme details so this page accurately reflects it.]"
@@ -48,6 +51,7 @@ export const services = [
   {
     slug: 'cleanse-programmes',
     title: 'Cleanse Programme',
+    onHome: true,
     shortCopy: '7, 15 and 30-day guided programmes combining diet, herbs and hydrotherapy sessions.',
     image: '/images/cleanse-programmes.jpg',
     fullDescription: [
@@ -59,8 +63,10 @@ export const services = [
   {
     slug: 'gut-lab-testing',
     title: 'Gut & Lab Testing',
+    onHome: true,
     shortCopy: 'Candida, food sensitivity, DNA diet & lifestyle mapping, parasitology, and microbiome testing.',
     image: null,
+    artVariant: 'root',
     fullDescription: [
       'Lab testing used to guide your herbal and dietary plan with real data rather than guesswork — candida, food sensitivity, DNA diet & lifestyle mapping, parasitology, and microbiome panels are all available.',
       'Test kits can be ordered directly through the shop, with results discussed at your consultation.'
