@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'Makéda Health — Herbal Medicine & Colon Hydrotherapy',
         short_name: 'Makéda Health',
         description: 'Herbal medicine, colon hydrotherapy and gut health support with Makéda Health.',
-        theme_color: '#3A3A38',
+        theme_color: '#3E2B1E',
         background_color: '#F7F4EE',
         display: 'standalone',
         start_url: '/',

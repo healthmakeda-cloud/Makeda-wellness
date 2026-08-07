@@ -1,5 +1,5 @@
-const INDIGO = '#3A3A38'
-const TERRACOTTA = '#A66A4A'
+const INDIGO = '#3E2B1E'
+const TERRACOTTA = '#CC5500'
 
 function HerbSprig() {
   return (
