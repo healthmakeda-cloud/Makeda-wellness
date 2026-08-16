@@ -53,32 +53,44 @@ export default function PrescriptionForm({ client, existing, onSave, onCancel, s
 
   const totalUsed = form.items.reduce((sum, item) => sum + (parseFloat(item.quantity_ml) || 0), 0)
 
+  const buildPayload = () => ({
+    ...form,
+    submission_id: client.id,
+    client_name: `${client.first_name || ''} ${client.surname || ''}`.trim(),
+    client_email: client.email,
+    total_volume_ml: form.total_volume_ml === '' ? null : Number(form.total_volume_ml),
+    issued_date: form.issued_date || null,
+    review_date: form.review_date || null,
+    items: form.items.map((item) => ({
+      ...item,
+      quantity_ml: item.quantity_ml === '' ? null : Number(item.quantity_ml)
+    }))
+  })
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSave({
-      ...form,
-      submission_id: client.id,
-      client_name: `${client.first_name || ''} ${client.surname || ''}`.trim(),
-      client_email: client.email,
-      total_volume_ml: form.total_volume_ml === '' ? null : Number(form.total_volume_ml),
-      issued_date: form.issued_date || null,
-      review_date: form.review_date || null,
-      items: form.items.map((item) => ({
-        ...item,
-        quantity_ml: item.quantity_ml === '' ? null : Number(item.quantity_ml)
-      }))
-    })
+    onSave(buildPayload())
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-linen border border-moss/20 rounded-lg p-5 space-y-5">
-      <div className="flex items-center justify-between">
-        <p className="font-display text-lg text-moss">
-          {existing ? `Edit prescription ${existing.reference || ''}` : 'New prescription'}
-        </p>
-        <span className="font-mono text-xs text-ink/50">
-          {client.first_name} {client.surname}
-        </span>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-display text-lg text-moss">
+            {existing ? `Edit prescription ${existing.reference || ''}` : 'New prescription'}
+          </p>
+          <span className="font-mono text-xs text-ink/50">
+            {client.first_name} {client.surname}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onCancel}
+          aria-label="Close"
+          className="flex-shrink-0 h-8 w-8 rounded-full border border-moss/20 text-moss hover:border-ochre hover:text-ochre transition-colors text-lg leading-none"
+        >
+          ×
+        </button>
       </div>
 
       {/* --- Herbs --- */}
@@ -177,8 +189,9 @@ export default function PrescriptionForm({ client, existing, onSave, onCancel, s
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="STATUS">
           <select className={inputClass} value={form.status} onChange={(e) => update('status', e.target.value)}>
-            <option value="draft">Draft — only visible to you</option>
-            <option value="issued">Issued — visible to the client</option>
+            <option value="draft">Draft — planning, only visible to you</option>
+            <option value="made">Made up — prepared, not yet given out</option>
+            <option value="issued">Issued — given to the client, visible to them</option>
             <option value="archived">Archived</option>
           </select>
         </Field>
@@ -187,13 +200,25 @@ export default function PrescriptionForm({ client, existing, onSave, onCancel, s
         </Field>
       </div>
 
-      <div className="flex justify-between items-center pt-2">
+      <div className="flex flex-wrap justify-between items-center gap-3 pt-2">
         <button type="button" onClick={onCancel} className="text-sm text-moss hover:text-ochre">
           Cancel
         </button>
-        <button type="submit" disabled={saving} className="bg-ochre text-linen px-6 py-2.5 rounded text-sm disabled:opacity-50">
-          {saving ? 'Saving…' : existing ? 'Save changes' : 'Create prescription'}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          {!existing && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => onSave(buildPayload(), { keepOpen: true })}
+              className="border border-moss text-moss px-5 py-2.5 rounded text-sm disabled:opacity-50 hover:bg-moss/5 transition-colors"
+            >
+              Save &amp; start another
+            </button>
+          )}
+          <button type="submit" disabled={saving} className="bg-ochre text-linen px-6 py-2.5 rounded text-sm disabled:opacity-50">
+            {saving ? 'Saving…' : existing ? 'Save changes' : 'Save prescription'}
+          </button>
+        </div>
       </div>
     </form>
   )

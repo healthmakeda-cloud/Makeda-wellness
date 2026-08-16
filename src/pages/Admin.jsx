@@ -61,6 +61,7 @@ export default function Admin() {
   const [rxClient, setRxClient] = useState(null)
   const [rxEditing, setRxEditing] = useState(null)
   const [rxSaving, setRxSaving] = useState(false)
+  const [rxFormKey, setRxFormKey] = useState(0)
 
   const load = async (pw) => {
     setLoading(true)
@@ -113,7 +114,7 @@ export default function Admin() {
     }
   }
 
-  const handleSavePrescription = async (payload) => {
+  const handleSavePrescription = async (payload, opts = {}) => {
     setRxSaving(true)
     setError('')
     const isEdit = Boolean(rxEditing)
@@ -128,6 +129,13 @@ export default function Admin() {
       return
     }
     await reloadPrescriptions()
+    if (opts.keepOpen) {
+      // Remount a blank form for the same client so several formulations
+      // can be written back to back without closing and reopening.
+      setRxEditing(null)
+      setRxFormKey((k) => k + 1)
+      return
+    }
     setRxClient(null)
     setRxEditing(null)
   }
@@ -390,17 +398,15 @@ export default function Admin() {
                         <p className="font-mono text-xs tracking-widest text-moss/60">
                           PRESCRIPTIONS &amp; TREATMENT PLAN
                         </p>
-                        {!(rxClient?.id === s.id) && (
-                          <button
-                            onClick={() => { setRxClient(s); setRxEditing(null) }}
-                            className="text-xs bg-moss text-linen px-3 py-1.5 rounded hover:bg-ink transition-colors"
-                          >
-                            + New prescription
-                          </button>
-                        )}
+                        <button
+                          onClick={() => { setRxClient(s); setRxEditing(null) }}
+                          className="text-xs bg-moss text-linen px-3 py-1.5 rounded hover:bg-ink transition-colors"
+                        >
+                          + New prescription
+                        </button>
                       </div>
 
-                      {clientPrescriptions(s.id).length === 0 && !(rxClient?.id === s.id) && (
+                      {clientPrescriptions(s.id).length === 0 && (
                         <p className="text-sm text-ink/50 italic">No prescriptions yet.</p>
                       )}
 
@@ -428,11 +434,13 @@ export default function Admin() {
                                 <span className={`font-mono text-[10px] px-2 py-0.5 rounded ${
                                   rx.status === 'issued'
                                     ? 'bg-sage/20 text-sage'
-                                    : rx.status === 'archived'
-                                      ? 'bg-moss/10 text-moss/50'
-                                      : 'bg-ochre/10 text-ochre'
+                                    : rx.status === 'made'
+                                      ? 'bg-amber/25 text-bronze'
+                                      : rx.status === 'archived'
+                                        ? 'bg-moss/10 text-moss/50'
+                                        : 'bg-ochre/10 text-ochre'
                                 }`}>
-                                  {rx.status}
+                                  {rx.status === 'made' ? 'made up' : rx.status}
                                 </span>
                                 <div className="flex gap-2">
                                   <button
@@ -486,6 +494,7 @@ export default function Admin() {
 
                       {rxClient?.id === s.id && (
                         <PrescriptionForm
+                          key={rxEditing?.id || `new-${rxFormKey}`}
                           client={s}
                           existing={rxEditing}
                           saving={rxSaving}
