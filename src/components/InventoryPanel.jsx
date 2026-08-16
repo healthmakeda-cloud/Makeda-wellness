@@ -19,55 +19,88 @@ function AddStockForm({ onSave, onCancel, saving }) {
     unit: 'ml',
     low_stock_threshold: '',
     supplier: '',
-    notes: ''
+    notes: '',
+    // First delivery, entered at the same time so setting up a new herb
+    // is a single step rather than two.
+    quantity_received: '',
+    batch_number: '',
+    purchase_date: new Date().toISOString().slice(0, 10),
+    sell_by_date: '',
+    cost: ''
   })
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="bg-linen border border-moss/20 rounded-lg p-5 space-y-4">
+    <div className="bg-linen border border-moss/20 rounded-lg p-5 space-y-5">
       <div className="flex items-center justify-between">
         <p className="font-display text-moss">Add a herb to stock</p>
         <button onClick={onCancel} className="h-8 w-8 rounded-full border border-moss/20 text-moss hover:border-ochre hover:text-ochre text-lg leading-none">×</button>
       </div>
 
-      {herb ? (
-        <div className="bg-cream border border-moss/10 rounded-md p-3 flex items-center justify-between">
-          <div>
-            <p className="text-sm text-ink italic">{herb.herb_latin}</p>
-            {herb.herb_common && <p className="text-xs text-ink/60">{herb.herb_common}</p>}
+      <div>
+        <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">1 · WHICH HERB?</p>
+        {herb ? (
+          <div className="bg-cream border border-moss/10 rounded-md p-3 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-ink italic">{herb.herb_latin}</p>
+              {herb.herb_common && <p className="text-xs text-ink/60">{herb.herb_common}</p>}
+            </div>
+            <button onClick={() => setHerb(null)} className="text-xs text-ochre hover:underline">Change</button>
           </div>
-          <button onClick={() => setHerb(null)} className="text-xs text-ochre hover:underline">Change</button>
+        ) : (
+          <HerbPicker onAdd={(h) => setHerb(h)} />
+        )}
+      </div>
+
+      <div>
+        <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">2 · HOW YOU HOLD IT</p>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Field label="FORMAT">
+            <select className={inputClass} value={form.format} onChange={(e) => update('format', e.target.value)}>
+              {FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </Field>
+          <Field label="MEASURED IN">
+            <select className={inputClass} value={form.unit} onChange={(e) => update('unit', e.target.value)}>
+              <option value="ml">ml (liquid)</option>
+              <option value="g">g (dried / powder)</option>
+            </select>
+          </Field>
+          <Field label={`ALERT ME BELOW (${form.unit})`}>
+            <input type="number" step="any" min="0" placeholder={`e.g. 100`} className={inputClass} value={form.low_stock_threshold} onChange={(e) => update('low_stock_threshold', e.target.value)} />
+          </Field>
         </div>
-      ) : (
-        <HerbPicker onAdd={(h) => setHerb(h)} />
-      )}
-
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Field label="FORMAT">
-          <select className={inputClass} value={form.format} onChange={(e) => update('format', e.target.value)}>
-            {FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </Field>
-        <Field label="MEASURED IN">
-          <select className={inputClass} value={form.unit} onChange={(e) => update('unit', e.target.value)}>
-            <option value="ml">ml (liquid)</option>
-            <option value="g">g (dried / powder)</option>
-          </select>
-        </Field>
-        <Field label={`LOW STOCK ALERT BELOW (${form.unit})`}>
-          <input type="number" step="any" min="0" className={inputClass} value={form.low_stock_threshold} onChange={(e) => update('low_stock_threshold', e.target.value)} />
-        </Field>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="USUAL SUPPLIER">
-          <input className={inputClass} value={form.supplier} onChange={(e) => update('supplier', e.target.value)} />
-        </Field>
-        <Field label="NOTES">
-          <input className={inputClass} value={form.notes} onChange={(e) => update('notes', e.target.value)} />
-        </Field>
+      <div>
+        <p className="font-mono text-xs tracking-wide text-moss/70 mb-1">3 · FIRST DELIVERY</p>
+        <p className="text-xs text-ink/50 italic mb-2">Optional — you can record deliveries later instead.</p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label={`QUANTITY RECEIVED (${form.unit})`}>
+            <input type="number" step="any" min="0" className={inputClass} value={form.quantity_received} onChange={(e) => update('quantity_received', e.target.value)} />
+          </Field>
+          <Field label="BATCH NUMBER">
+            <input className={inputClass} value={form.batch_number} onChange={(e) => update('batch_number', e.target.value)} />
+          </Field>
+          <Field label="DATE RECEIVED">
+            <input type="date" className={inputClass} value={form.purchase_date} onChange={(e) => update('purchase_date', e.target.value)} />
+          </Field>
+          <Field label="SELL BY DATE">
+            <input type="date" className={inputClass} value={form.sell_by_date} onChange={(e) => update('sell_by_date', e.target.value)} />
+          </Field>
+          <Field label="SUPPLIER">
+            <input className={inputClass} value={form.supplier} onChange={(e) => update('supplier', e.target.value)} />
+          </Field>
+          <Field label="COST (£)">
+            <input type="number" step="any" min="0" className={inputClass} value={form.cost} onChange={(e) => update('cost', e.target.value)} />
+          </Field>
+        </div>
       </div>
+
+      <Field label="NOTES">
+        <input className={inputClass} value={form.notes} onChange={(e) => update('notes', e.target.value)} />
+      </Field>
 
       <div className="flex justify-end">
         <button
@@ -80,7 +113,15 @@ function AddStockForm({ onSave, onCancel, saving }) {
             unit: form.unit,
             low_stock_threshold: form.low_stock_threshold === '' ? 0 : Number(form.low_stock_threshold),
             supplier: form.supplier,
-            notes: form.notes
+            notes: form.notes,
+            first_batch: form.quantity_received === '' ? null : {
+              quantity_received: Number(form.quantity_received),
+              batch_number: form.batch_number,
+              purchase_date: form.purchase_date || null,
+              sell_by_date: form.sell_by_date || null,
+              supplier: form.supplier,
+              cost: form.cost === '' ? null : Number(form.cost)
+            }
           })}
           className="bg-ochre text-linen px-6 py-2.5 rounded text-sm disabled:opacity-50"
         >

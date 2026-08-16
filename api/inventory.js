@@ -50,16 +50,18 @@ export default async function handler(req, res) {
     const { type, ...body } = req.body || {}
 
     if (type === 'stock') {
+      const { first_batch, ...stockFields } = body
+
       const { data, error } = await supabase
         .from('herb_stock')
         .insert({
-          herb_latin: body.herb_latin,
-          herb_common: body.herb_common,
-          format: body.format,
-          unit: body.unit || 'ml',
-          low_stock_threshold: body.low_stock_threshold || 0,
-          supplier: body.supplier,
-          notes: body.notes
+          herb_latin: stockFields.herb_latin,
+          herb_common: stockFields.herb_common,
+          format: stockFields.format,
+          unit: stockFields.unit || 'ml',
+          low_stock_threshold: stockFields.low_stock_threshold || 0,
+          supplier: stockFields.supplier,
+          notes: stockFields.notes
         })
         .select()
         .single()
@@ -68,6 +70,37 @@ export default async function handler(req, res) {
         res.status(500).json({ error: error.message })
         return
       }
+
+      // If a first delivery was entered on the same form, record it now so
+      // setting up a new herb is a single step.
+      if (first_batch && Number(first_batch.quantity_received) > 0) {
+        const qty = Number(first_batch.quantity_received)
+        const { data: batch } = await supabase
+          .from('herb_batches')
+          .insert({
+            stock_id: data.id,
+            batch_number: first_batch.batch_number,
+            supplier: first_batch.supplier,
+            purchase_date: first_batch.purchase_date || null,
+            sell_by_date: first_batch.sell_by_date || null,
+            quantity_received: qty,
+            quantity_remaining: qty,
+            cost: first_batch.cost ?? null
+          })
+          .select()
+          .single()
+
+        if (batch) {
+          await supabase.from('stock_movements').insert({
+            stock_id: data.id,
+            batch_id: batch.id,
+            quantity_change: qty,
+            movement_type: 'delivery',
+            notes: first_batch.batch_number ? `Batch ${first_batch.batch_number}` : 'Opening stock'
+          })
+        }
+      }
+
       res.status(200).json({ stock: data })
       return
     }
