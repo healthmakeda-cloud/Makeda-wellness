@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import PrescriptionForm from '../components/PrescriptionForm.jsx'
+import InventoryPanel from '../components/InventoryPanel.jsx'
 
 // Only renders when there's an actual answer — keeps the detail view
 // condensed instead of a wall of blank fields.
@@ -62,15 +63,18 @@ export default function Admin() {
   const [rxEditing, setRxEditing] = useState(null)
   const [rxSaving, setRxSaving] = useState(false)
   const [rxFormKey, setRxFormKey] = useState(0)
+  const [stock, setStock] = useState([])
+  const [stockSaving, setStockSaving] = useState(false)
 
   const load = async (pw) => {
     setLoading(true)
     setError('')
     try {
-      const [subRes, orderRes, rxRes] = await Promise.all([
+      const [subRes, orderRes, rxRes, stockRes] = await Promise.all([
         fetch('/api/submissions', { headers: { 'x-admin-password': pw } }),
         fetch('/api/orders', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/prescriptions', { headers: { 'x-admin-password': pw } })
+        fetch('/api/prescriptions', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/inventory', { headers: { 'x-admin-password': pw } })
       ])
       if (subRes.status === 401 || orderRes.status === 401) {
         setError('Incorrect password.')
@@ -81,9 +85,11 @@ export default function Admin() {
       const subData = await subRes.json()
       const orderData = await orderRes.json()
       const rxData = rxRes.ok ? await rxRes.json() : { prescriptions: [] }
+      const stockData = stockRes.ok ? await stockRes.json() : { stock: [] }
       setSubmissions(subData.submissions || [])
       setOrders(orderData.orders || [])
       setPrescriptions(rxData.prescriptions || [])
+      setStock(stockData.stock || [])
       setAuthed(true)
       sessionStorage.setItem('makeda_admin_pw', pw)
     } catch (err) {
@@ -151,6 +157,78 @@ export default function Admin() {
       return
     }
     await reloadPrescriptions()
+  }
+
+  const reloadStock = async () => {
+    const res = await fetch('/api/inventory', { headers: { 'x-admin-password': password } })
+    if (res.ok) {
+      const data = await res.json()
+      setStock(data.stock || [])
+    }
+  }
+
+  const handleStockSave = async (payload) => {
+    setStockSaving(true)
+    setError('')
+    const res = await fetch('/api/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(payload)
+    })
+    setStockSaving(false)
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      setError(d.error || 'Could not save. That herb and format may already be in your stock list.')
+      return
+    }
+    await reloadStock()
+  }
+
+  const handleStockUpdate = async (payload) => {
+    setError('')
+    const res = await fetch('/api/inventory', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(payload)
+    })
+    if (!res.ok) {
+      setError('Could not update stock.')
+      return
+    }
+    await reloadStock()
+  }
+
+  const handleStockDelete = async (type, id) => {
+    const what = type === 'batch' ? 'this batch' : 'this herb and all its batches'
+    if (!window.confirm(`Delete ${what}? This cannot be undone.`)) return
+    const res = await fetch(`/api/inventory?type=${type}&id=${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password }
+    })
+    if (!res.ok) {
+      setError('Could not delete.')
+      return
+    }
+    await reloadStock()
+  }
+
+  const handleDeductStock = async (rx) => {
+    if (!window.confirm(`Deduct the herbs in ${rx.reference} from your stock? This cannot be undone.`)) return
+    setError('')
+    const res = await fetch('/api/deduct-stock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ prescription_id: rx.id })
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      setError(data.error || 'Could not deduct stock.')
+      return
+    }
+    if (data.warnings?.length) {
+      setError(data.warnings.join(' '))
+    }
+    await Promise.all([reloadStock(), reloadPrescriptions()])
   }
 
   const clientPrescriptions = (submissionId) =>
@@ -229,6 +307,12 @@ export default function Admin() {
           className={`pb-3 text-sm font-mono ${tab === 'orders' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
         >
           Orders ({orders.length})
+        </button>
+        <button
+          onClick={() => setTab('inventory')}
+          className={`pb-3 text-sm font-mono ${tab === 'inventory' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
+        >
+          Inventory ({stock.length}){stock.some((x) => x.is_low) ? ' ⚠' : ''}
         </button>
       </div>
 
@@ -443,6 +527,17 @@ export default function Admin() {
                                   {rx.status === 'made' ? 'made up' : rx.status}
                                 </span>
                                 <div className="flex gap-2">
+                                  {!rx.stock_deducted && (rx.prescription_items || []).length > 0 && (
+                                    <button
+                                      onClick={() => handleDeductStock(rx)}
+                                      className="text-xs text-sage hover:text-ochre"
+                                    >
+                                      Deduct stock
+                                    </button>
+                                  )}
+                                  {rx.stock_deducted && (
+                                    <span className="text-xs text-ink/40">stock deducted</span>
+                                  )}
                                   <button
                                     onClick={() => { setRxClient(s); setRxEditing(rx) }}
                                     className="text-xs text-moss hover:text-ochre"
@@ -509,6 +604,16 @@ export default function Admin() {
             ))}
           </div>
         </div>
+      )}
+
+      {tab === 'inventory' && (
+        <InventoryPanel
+          stock={stock}
+          saving={stockSaving}
+          onSave={handleStockSave}
+          onUpdate={handleStockUpdate}
+          onDelete={handleStockDelete}
+        />
       )}
 
       {tab === 'orders' && (
