@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import PrescriptionForm from '../components/PrescriptionForm.jsx'
 
 // Only renders when there's an actual answer — keeps the detail view
 // condensed instead of a wall of blank fields.
@@ -56,14 +57,19 @@ export default function Admin() {
   const [openId, setOpenId] = useState(null)
   const [conditionFilter, setConditionFilter] = useState('all')
   const [sexFilter, setSexFilter] = useState('all')
+  const [prescriptions, setPrescriptions] = useState([])
+  const [rxClient, setRxClient] = useState(null)
+  const [rxEditing, setRxEditing] = useState(null)
+  const [rxSaving, setRxSaving] = useState(false)
 
   const load = async (pw) => {
     setLoading(true)
     setError('')
     try {
-      const [subRes, orderRes] = await Promise.all([
+      const [subRes, orderRes, rxRes] = await Promise.all([
         fetch('/api/submissions', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/orders', { headers: { 'x-admin-password': pw } })
+        fetch('/api/orders', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/prescriptions', { headers: { 'x-admin-password': pw } })
       ])
       if (subRes.status === 401 || orderRes.status === 401) {
         setError('Incorrect password.')
@@ -73,8 +79,10 @@ export default function Admin() {
       }
       const subData = await subRes.json()
       const orderData = await orderRes.json()
+      const rxData = rxRes.ok ? await rxRes.json() : { prescriptions: [] }
       setSubmissions(subData.submissions || [])
       setOrders(orderData.orders || [])
+      setPrescriptions(rxData.prescriptions || [])
       setAuthed(true)
       sessionStorage.setItem('makeda_admin_pw', pw)
     } catch (err) {
@@ -96,6 +104,49 @@ export default function Admin() {
       return val && String(val).trim() !== ''
     })
   }, [submissions, conditionFilter, sexFilter])
+
+  const reloadPrescriptions = async () => {
+    const res = await fetch('/api/prescriptions', { headers: { 'x-admin-password': password } })
+    if (res.ok) {
+      const data = await res.json()
+      setPrescriptions(data.prescriptions || [])
+    }
+  }
+
+  const handleSavePrescription = async (payload) => {
+    setRxSaving(true)
+    setError('')
+    const isEdit = Boolean(rxEditing)
+    const res = await fetch('/api/prescriptions', {
+      method: isEdit ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(isEdit ? { ...payload, id: rxEditing.id } : payload)
+    })
+    setRxSaving(false)
+    if (!res.ok) {
+      setError('Could not save the prescription. Please try again.')
+      return
+    }
+    await reloadPrescriptions()
+    setRxClient(null)
+    setRxEditing(null)
+  }
+
+  const handleDeletePrescription = async (id) => {
+    if (!window.confirm('Delete this prescription? This cannot be undone.')) return
+    const res = await fetch(`/api/prescriptions?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password }
+    })
+    if (!res.ok) {
+      setError('Could not delete the prescription.')
+      return
+    }
+    await reloadPrescriptions()
+  }
+
+  const clientPrescriptions = (submissionId) =>
+    prescriptions.filter((rx) => rx.submission_id === submissionId)
 
   const handleExport = async (kind) => {
     const params = new URLSearchParams()
@@ -333,6 +384,116 @@ export default function Admin() {
                       <Row label="SIGNATURE" value={s.signature} />
                       <Row label="SIGNED DATE" value={s.signed_date} />
                     </Section>
+
+                    <div className="mt-6 pt-5 border-t border-moss/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="font-mono text-xs tracking-widest text-moss/60">
+                          PRESCRIPTIONS &amp; TREATMENT PLAN
+                        </p>
+                        {!(rxClient?.id === s.id) && (
+                          <button
+                            onClick={() => { setRxClient(s); setRxEditing(null) }}
+                            className="text-xs bg-moss text-linen px-3 py-1.5 rounded hover:bg-ink transition-colors"
+                          >
+                            + New prescription
+                          </button>
+                        )}
+                      </div>
+
+                      {clientPrescriptions(s.id).length === 0 && !(rxClient?.id === s.id) && (
+                        <p className="text-sm text-ink/50 italic">No prescriptions yet.</p>
+                      )}
+
+                      <div className="space-y-2 mb-3">
+                        {clientPrescriptions(s.id).map((rx) => (
+                          <div key={rx.id} className="bg-linen border border-moss/10 rounded-md p-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm text-ink">
+                                  <span className="font-mono text-xs text-ochre">{rx.reference}</span>
+                                  {' — '}{rx.formulation_type}
+                                  {rx.total_volume_ml ? `, ${rx.total_volume_ml}ml` : ''}
+                                </p>
+                                <p className="text-xs text-ink/60">
+                                  {rx.dosage} {rx.frequency}
+                                  {rx.duration ? ` · ${rx.duration}` : ''}
+                                </p>
+                                <p className="text-xs text-ink/50 mt-1">
+                                  {(rx.prescription_items || []).length} herb(s)
+                                  {rx.issued_date ? ` · issued ${rx.issued_date}` : ''}
+                                  {rx.review_date ? ` · review ${rx.review_date}` : ''}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                <span className={`font-mono text-[10px] px-2 py-0.5 rounded ${
+                                  rx.status === 'issued'
+                                    ? 'bg-sage/20 text-sage'
+                                    : rx.status === 'archived'
+                                      ? 'bg-moss/10 text-moss/50'
+                                      : 'bg-ochre/10 text-ochre'
+                                }`}>
+                                  {rx.status}
+                                </span>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => { setRxClient(s); setRxEditing(rx) }}
+                                    className="text-xs text-moss hover:text-ochre"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePrescription(rx.id)}
+                                    className="text-xs text-ochre/70 hover:text-ochre"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {(rx.prescription_items || []).length > 0 && (
+                              <ul className="mt-2 pt-2 border-t border-moss/10 space-y-0.5">
+                                {(rx.prescription_items || [])
+                                  .slice()
+                                  .sort((a, b) => a.sort_order - b.sort_order)
+                                  .map((item) => (
+                                    <li key={item.id} className="text-xs text-ink/70">
+                                      <span className="italic">{item.herb_latin}</span>
+                                      {item.herb_common ? ` (${item.herb_common})` : ''}
+                                      {' — '}{item.format}
+                                      {item.quantity_ml ? `, ${item.quantity_ml}ml` : ''}
+                                      {item.notes ? ` · ${item.notes}` : ''}
+                                    </li>
+                                  ))}
+                              </ul>
+                            )}
+
+                            {rx.instructions && (
+                              <p className="text-xs text-ink/70 mt-2 pt-2 border-t border-moss/10">
+                                <span className="font-mono text-[10px] text-moss/50">INSTRUCTIONS</span><br />
+                                {rx.instructions}
+                              </p>
+                            )}
+                            {rx.practitioner_notes && (
+                              <p className="text-xs text-ink/70 mt-2">
+                                <span className="font-mono text-[10px] text-moss/50">PRIVATE NOTES</span><br />
+                                {rx.practitioner_notes}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {rxClient?.id === s.id && (
+                        <PrescriptionForm
+                          client={s}
+                          existing={rxEditing}
+                          saving={rxSaving}
+                          onSave={handleSavePrescription}
+                          onCancel={() => { setRxClient(null); setRxEditing(null) }}
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

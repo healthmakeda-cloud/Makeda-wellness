@@ -10,6 +10,7 @@ export default function Members() {
   const [linkSent, setLinkSent] = useState(false)
   const [error, setError] = useState('')
   const [submissions, setSubmissions] = useState([])
+  const [prescriptions, setPrescriptions] = useState([])
 
   useEffect(() => {
     if (!supabase) {
@@ -28,6 +29,12 @@ export default function Members() {
 
   useEffect(() => {
     if (session && supabase) {
+      supabase
+        .from('prescriptions')
+        .select('*, prescription_items(*)')
+        .order('created_at', { ascending: false })
+        .then(({ data }) => setPrescriptions(data || []))
+
       supabase
         .from('intake_submissions')
         .select('*')
@@ -132,9 +139,51 @@ export default function Members() {
           <p className="text-xs text-ink/50">Coming soon</p>
         </div>
         <div className="bg-linen border border-moss/10 rounded-lg p-5 text-center">
-          <p className="font-display text-moss mb-1">Updates & prescriptions</p>
+          <p className="font-display text-moss mb-1">Updates</p>
           <p className="text-xs text-ink/50">Coming soon</p>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <p className="font-mono text-xs tracking-widest text-ochre mb-3">YOUR PRESCRIPTIONS</p>
+        {prescriptions.length === 0 ? (
+          <p className="text-sm text-ink/60">
+            No prescriptions yet. Once Makéda has prepared your formulation, it will appear here.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {prescriptions.map((rx) => (
+              <div key={rx.id} className="bg-cream border border-moss/10 rounded-lg p-5">
+                <div className="flex items-baseline justify-between gap-3 mb-2">
+                  <p className="font-display text-moss">{rx.formulation_type}</p>
+                  <span className="font-mono text-xs text-ink/50">{rx.reference}</span>
+                </div>
+                <p className="text-sm text-ink/80">
+                  Take <strong>{rx.dosage}</strong> {String(rx.frequency || '').toLowerCase()}
+                  {rx.duration ? ` for ${rx.duration}` : ''}.
+                </p>
+                {rx.instructions && <p className="text-sm text-ink/70 mt-2">{rx.instructions}</p>}
+
+                {(rx.prescription_items || []).length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-moss/10">
+                    <p className="font-mono text-[10px] tracking-wide text-moss/50 mb-1">CONTAINS</p>
+                    <p className="text-xs text-ink/70">
+                      {(rx.prescription_items || [])
+                        .slice()
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((i) => i.herb_common || i.herb_latin)
+                        .join(', ')}
+                    </p>
+                  </div>
+                )}
+
+                {rx.review_date && (
+                  <p className="text-xs text-ochre mt-3">Review date: {rx.review_date}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
