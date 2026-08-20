@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import PrescriptionForm from '../components/PrescriptionForm.jsx'
 import InventoryPanel from '../components/InventoryPanel.jsx'
+import ClientIntake from './ClientIntake.jsx'
 
 // Only renders when there's an actual answer — keeps the detail view
 // condensed instead of a wall of blank fields.
@@ -297,6 +298,12 @@ export default function Admin() {
 
       <div className="flex gap-6 border-b border-moss/10 mb-8">
         <button
+          onClick={() => setTab('newclient')}
+          className={`pb-3 text-sm font-mono ${tab === 'newclient' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
+        >
+          + New client form
+        </button>
+        <button
           onClick={() => setTab('submissions')}
           className={`pb-3 text-sm font-mono ${tab === 'submissions' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
         >
@@ -473,9 +480,20 @@ export default function Admin() {
                     <Section title="CONSENT">
                       <Row label="CONSENT GIVEN" value={s.consent_given} />
                       <Row label="COLON HYDROTHERAPY CONSENT" value={s.ch_consent_given} />
-                      <Row label="SIGNATURE" value={s.signature} />
+                      <Row label="SIGNED BY" value={s.signature} />
                       <Row label="SIGNED DATE" value={s.signed_date} />
                     </Section>
+
+                    {s.signature_image && (
+                      <div className="mt-3">
+                        <p className="font-mono text-xs text-ochre mb-1">SIGNATURE</p>
+                        <img
+                          src={s.signature_image}
+                          alt={`Signature of ${s.first_name} ${s.surname}`}
+                          className="max-w-xs border border-moss/20 rounded-md bg-linen"
+                        />
+                      </div>
+                    )}
 
                     <div className="mt-6 pt-5 border-t border-moss/10">
                       <div className="flex items-center justify-between mb-3">
@@ -604,6 +622,16 @@ export default function Admin() {
             ))}
           </div>
         </div>
+      )}
+
+      {tab === 'newclient' && (
+        <ClientIntake
+          clinicMode
+          onComplete={async () => {
+            await load(password)
+            setTab('submissions')
+          }}
+        />
       )}
 
       {tab === 'inventory' && (

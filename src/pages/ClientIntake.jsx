@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import RootDivider from '../components/RootDivider.jsx'
 import MedicineSelector from '../components/MedicineSelector.jsx'
+import SignaturePad from '../components/SignaturePad.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 
 const cardiovascularFlags = ['Severe cardiac disease', 'High blood pressure', 'Severe anaemia']
@@ -12,7 +13,8 @@ const menopauseSymptomsList = [
   'Hair loss', 'Mood changes', 'Sleep disturbance', 'Joint pain', 'Low libido'
 ]
 
-const DRAFT_KEY = 'makeda_intake_draft'
+const PUBLIC_DRAFT_KEY = 'makeda_intake_draft'
+const CLINIC_DRAFT_KEY = 'makeda_intake_draft_clinic'
 
 const initialForm = {
   firstName: '', surname: '', dob: '', sex: '', address: '', postcode: '',
@@ -37,7 +39,7 @@ const initialForm = {
   bowelDaily: false, bowelNumberPerDay: '', bowelDifficulty: false, bowelConsistency: '', bowelFlatulence: false,
   dietVegetarianVegan: false, dietFoodCravings: false, dietFoodCravingsDetail: '',
   dietDailyFluidIntake: '', dietEatingDisorder: false,
-  consentGiven: false, chConsentGiven: false, signature: '', signedDate: '',
+  consentGiven: false, chConsentGiven: false, signature: '', signatureImage: '', signedDate: '',
   servicesInterested: []
 }
 
@@ -143,12 +145,14 @@ function RatingScale({ label, lowLabel, highLabel, value, onChange }) {
   )
 }
 
-export default function ClientIntake() {
+export default function ClientIntake({ clinicMode = false, onComplete = null }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const DRAFT_KEY = clinicMode ? CLINIC_DRAFT_KEY : PUBLIC_DRAFT_KEY
 
   // Restore an in-progress draft (covers accidental refresh / navigating away),
   // and set up a baseline history entry so the back button can step backward
@@ -168,6 +172,8 @@ export default function ClientIntake() {
     } catch (err) {
       // ignore a corrupt draft
     }
+    if (clinicMode) return
+
     window.history.replaceState({ step: restoredStep }, '', window.location.pathname)
 
     const handlePopState = (e) => {
@@ -189,8 +195,18 @@ export default function ClientIntake() {
   }, [form])
 
   const goToStep = (n) => {
-    window.history.pushState({ step: n }, '', window.location.pathname)
+    if (!clinicMode) window.history.pushState({ step: n }, '', window.location.pathname)
     setStep(n)
+  }
+
+  // Wipes everything so the next client starts from a genuinely blank form —
+  // important when Makéda sees several clients back to back on one device.
+  const startFresh = () => {
+    sessionStorage.removeItem(DRAFT_KEY)
+    setForm(initialForm)
+    setStep(1)
+    setSubmitted(false)
+    setError('')
   }
 
   const update = (key, value) => setForm((f) => ({ ...f, [key]: value }))
@@ -249,7 +265,8 @@ export default function ClientIntake() {
       diet_food_cravings_detail: form.dietFoodCravingsDetail, diet_daily_fluid_intake: form.dietDailyFluidIntake,
       diet_eating_disorder: form.dietEatingDisorder,
       consent_given: form.consentGiven, ch_consent_given: form.chConsentGiven,
-      signature: form.signature, signed_date: form.signedDate || null,
+      signature: form.signature, signature_image: form.signatureImage,
+      signed_date: form.signedDate || null,
       services_interested: form.servicesInterested,
       status: anyFlags.length > 0 ? 'flagged' : 'new'
     })
@@ -264,9 +281,42 @@ export default function ClientIntake() {
     }
     sessionStorage.removeItem(DRAFT_KEY)
     setSubmitted(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (submitted) {
+    if (clinicMode) {
+      return (
+        <div className="bg-cream border border-moss/10 rounded-lg p-8 text-center">
+          <h2 className="font-display text-2xl text-moss mb-3">
+            Saved for {form.firstName} {form.surname}
+          </h2>
+          <p className="text-ink/70 text-sm mb-2">
+            Their record is now in Intake submissions.
+          </p>
+          <p className="text-ink/60 text-sm mb-6">
+            They can sign into the Members area using <span className="text-ochre">{form.email}</span> to
+            see their record and any prescriptions you issue.
+          </p>
+          {anyFlags.length > 0 && (
+            <p className="text-sm text-ochre bg-ochre/10 rounded-md px-3 py-2 mb-6">
+              Flagged: {anyFlags.join(', ')}
+            </p>
+          )}
+          <div className="flex flex-wrap justify-center gap-3">
+            <button onClick={startFresh} className="bg-moss text-linen px-6 py-3 rounded text-sm">
+              Start a form for the next client
+            </button>
+            {onComplete && (
+              <button onClick={() => { startFresh(); onComplete() }} className="border border-moss text-moss px-6 py-3 rounded text-sm">
+                Done
+              </button>
+            )}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <h1 className="font-display text-3xl text-moss mb-4">Thank you, {form.firstName || 'there'}.</h1>
@@ -279,17 +329,38 @@ export default function ClientIntake() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-16">
-      <p className="font-mono text-xs tracking-widest text-ochre mb-4">YOUR HEALTH JOURNEY</p>
-      <h1 className="font-display text-3xl text-moss mb-2">Before your first session</h1>
-      <p className="text-ink/70 mb-6 text-sm">
-        This mirrors the paper form used in clinic — contact and GP details, health history by system, then consent.
-      </p>
+    <div className={clinicMode ? '' : 'max-w-2xl mx-auto px-6 py-16'}>
+      {clinicMode ? (
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+          <div>
+            <h2 className="font-display text-xl text-moss">In-clinic health journey form</h2>
+            <p className="text-sm text-ink/60">
+              Complete this with the client. Enter <strong>their</strong> email — that's what they'll use
+              to sign into the Members area.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={startFresh}
+            className="text-xs border border-moss/30 text-moss px-3 py-1.5 rounded hover:border-ochre hover:text-ochre transition-colors flex-shrink-0"
+          >
+            Clear &amp; start fresh
+          </button>
+        </div>
+      ) : (
+        <>
+          <p className="font-mono text-xs tracking-widest text-ochre mb-4">YOUR HEALTH JOURNEY</p>
+          <h1 className="font-display text-3xl text-moss mb-2">Before your first session</h1>
+          <p className="text-ink/70 mb-6 text-sm">
+            This mirrors the paper form used in clinic — contact and GP details, health history by system, then consent.
+          </p>
 
-      <div className="bg-cream border border-moss/10 rounded-lg px-4 py-3 mb-10 text-sm text-ink/80">
-        <span className="font-mono text-xs tracking-wide text-ochre">CONFIDENTIAL — </span>
-        Everything you share here is held in strict confidence and is only ever seen by Makéda and authorised clinic staff.
-      </div>
+          <div className="bg-cream border border-moss/10 rounded-lg px-4 py-3 mb-10 text-sm text-ink/80">
+            <span className="font-mono text-xs tracking-wide text-ochre">CONFIDENTIAL — </span>
+            Everything you share here is held in strict confidence and is only ever seen by Makéda and authorised clinic staff.
+          </div>
+        </>
+      )}
 
       <div className="flex flex-wrap items-center gap-3 mb-10 font-mono text-xs text-moss/60">
         <span className={step === 1 ? 'text-ochre' : ''}>01 Contact & GP</span>
@@ -571,8 +642,13 @@ export default function ClientIntake() {
               </>
             )}
 
+            <SignaturePad
+              value={form.signatureImage}
+              onChange={(v) => update('signatureImage', v)}
+            />
+
             <div className="grid sm:grid-cols-2 gap-5">
-              <Field label="TYPE FULL NAME AS SIGNATURE"><input required className={inputClass} value={form.signature} onChange={(e) => update('signature', e.target.value)} /></Field>
+              <Field label="FULL NAME (TYPED)"><input required className={inputClass} value={form.signature} onChange={(e) => update('signature', e.target.value)} /></Field>
               <Field label="DATE"><input required type="date" className={inputClass} value={form.signedDate} onChange={(e) => update('signedDate', e.target.value)} /></Field>
             </div>
 
