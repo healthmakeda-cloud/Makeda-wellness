@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import RootMark from '../components/RootMark.jsx'
 import RootDivider from '../components/RootDivider.jsx'
+import MessageThread from '../components/MessageThread.jsx'
 import { supabase } from '../lib/supabaseClient.js'
 
 export default function Members() {
@@ -11,6 +12,8 @@ export default function Members() {
   const [error, setError] = useState('')
   const [submissions, setSubmissions] = useState([])
   const [prescriptions, setPrescriptions] = useState([])
+  const [messages, setMessages] = useState([])
+  const [msgSending, setMsgSending] = useState(false)
 
   useEffect(() => {
     if (!supabase) {
@@ -29,6 +32,12 @@ export default function Members() {
 
   useEffect(() => {
     if (session && supabase) {
+      supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .then(({ data }) => setMessages(data || []))
+
       supabase
         .from('prescriptions')
         .select('*, prescription_items(*)')
@@ -61,10 +70,33 @@ export default function Members() {
     setLinkSent(true)
   }
 
+  const handleSendMessage = async (body) => {
+    if (!supabase || !session) return
+    setMsgSending(true)
+    const { error } = await supabase.from('messages').insert({
+      submission_id: submissions[0]?.id || null,
+      client_email: session.user.email,
+      sender: 'client',
+      sender_name: submissions[0]?.first_name || null,
+      body,
+      read_by_client: true
+    })
+    setMsgSending(false)
+    if (!error) {
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true })
+      setMessages(data || [])
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     setSession(null)
     setSubmissions([])
+    setMessages([])
+    setPrescriptions([])
   }
 
   if (checking) {
@@ -138,9 +170,18 @@ export default function Members() {
           <p className="font-display text-moss mb-1">Chat with Makéda's AI</p>
           <p className="text-xs text-ink/50">Coming soon</p>
         </div>
-        <div className="bg-linen border border-moss/10 rounded-lg p-5 text-center">
-          <p className="font-display text-moss mb-1">Updates</p>
-          <p className="text-xs text-ink/50">Coming soon</p>
+      </div>
+
+      <div className="mt-8">
+        <p className="font-mono text-xs tracking-widest text-ochre mb-3">MESSAGES</p>
+        <div className="bg-cream border border-moss/10 rounded-lg p-5">
+          <MessageThread
+            messages={messages}
+            viewerRole="client"
+            sending={msgSending}
+            onSend={handleSendMessage}
+            placeholder="Ask Makéda a question…"
+          />
         </div>
       </div>
 

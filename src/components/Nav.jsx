@@ -7,6 +7,7 @@ const links = [
   { to: '/method', label: 'The Makéda Method™' },
   { to: '/herbal-dispensary', label: 'Herbal Dispensary' },
   { to: '/colon-hydrotherapy', label: 'Colon Hydrotherapy' },
+  { to: '/vlog', label: 'Vlog' },
   { to: '/shop', label: 'Shop' },
   { to: '/client-intake', label: 'Your health journey' },
   { to: '/contact', label: 'Contact' }

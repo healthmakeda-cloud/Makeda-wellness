@@ -145,7 +145,7 @@ function RatingScale({ label, lowLabel, highLabel, value, onChange }) {
   )
 }
 
-export default function ClientIntake({ clinicMode = false, onComplete = null }) {
+export default function ClientIntake({ clinicMode = false, onComplete = null, onSaved = null }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
@@ -282,6 +282,7 @@ export default function ClientIntake({ clinicMode = false, onComplete = null }) 
     sessionStorage.removeItem(DRAFT_KEY)
     setSubmitted(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (onSaved) onSaved()
   }
 
   if (submitted) {

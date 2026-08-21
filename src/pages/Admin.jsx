@@ -2,6 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import PrescriptionForm from '../components/PrescriptionForm.jsx'
 import InventoryPanel from '../components/InventoryPanel.jsx'
 import ClientIntake from './ClientIntake.jsx'
+import MessageThread from '../components/MessageThread.jsx'
+import VlogPanel from '../components/VlogPanel.jsx'
+import ResearchPanel from '../components/ResearchPanel.jsx'
 
 // Only renders when there's an actual answer — keeps the detail view
 // condensed instead of a wall of blank fields.
@@ -66,16 +69,22 @@ export default function Admin() {
   const [rxFormKey, setRxFormKey] = useState(0)
   const [stock, setStock] = useState([])
   const [stockSaving, setStockSaving] = useState(false)
+  const [messages, setMessages] = useState([])
+  const [msgSending, setMsgSending] = useState(false)
+  const [vlogPosts, setVlogPosts] = useState([])
+  const [vlogSaving, setVlogSaving] = useState(false)
 
   const load = async (pw) => {
     setLoading(true)
     setError('')
     try {
-      const [subRes, orderRes, rxRes, stockRes] = await Promise.all([
+      const [subRes, orderRes, rxRes, stockRes, msgRes, vlogRes] = await Promise.all([
         fetch('/api/submissions', { headers: { 'x-admin-password': pw } }),
         fetch('/api/orders', { headers: { 'x-admin-password': pw } }),
         fetch('/api/prescriptions', { headers: { 'x-admin-password': pw } }),
-        fetch('/api/inventory', { headers: { 'x-admin-password': pw } })
+        fetch('/api/inventory', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/messages', { headers: { 'x-admin-password': pw } }),
+        fetch('/api/vlog', { headers: { 'x-admin-password': pw } })
       ])
       if (subRes.status === 401 || orderRes.status === 401) {
         setError('Incorrect password.')
@@ -87,10 +96,14 @@ export default function Admin() {
       const orderData = await orderRes.json()
       const rxData = rxRes.ok ? await rxRes.json() : { prescriptions: [] }
       const stockData = stockRes.ok ? await stockRes.json() : { stock: [] }
+      const msgData = msgRes.ok ? await msgRes.json() : { messages: [] }
+      const vlogData = vlogRes.ok ? await vlogRes.json() : { posts: [] }
       setSubmissions(subData.submissions || [])
       setOrders(orderData.orders || [])
       setPrescriptions(rxData.prescriptions || [])
       setStock(stockData.stock || [])
+      setMessages(msgData.messages || [])
+      setVlogPosts(vlogData.posts || [])
       setAuthed(true)
       sessionStorage.setItem('makeda_admin_pw', pw)
     } catch (err) {
@@ -232,6 +245,88 @@ export default function Admin() {
     await Promise.all([reloadStock(), reloadPrescriptions()])
   }
 
+  const reloadVlog = async () => {
+    const res = await fetch('/api/vlog', { headers: { 'x-admin-password': password } })
+    if (res.ok) {
+      const d = await res.json()
+      setVlogPosts(d.posts || [])
+    }
+  }
+
+  const handleVlogSave = async (post) => {
+    setVlogSaving(true)
+    setError('')
+    const res = await fetch('/api/vlog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(post)
+    })
+    setVlogSaving(false)
+    if (!res.ok) { setError('Could not save the post.'); return }
+    await reloadVlog()
+  }
+
+  const handleVlogUpdate = async (post) => {
+    setVlogSaving(true)
+    setError('')
+    const res = await fetch('/api/vlog', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify(post)
+    })
+    setVlogSaving(false)
+    if (!res.ok) { setError('Could not update the post.'); return }
+    await reloadVlog()
+  }
+
+  const handleVlogDelete = async (id) => {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return
+    const res = await fetch(`/api/vlog?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password }
+    })
+    if (!res.ok) { setError('Could not delete the post.'); return }
+    await reloadVlog()
+  }
+
+  const clientMessages = (email) => messages.filter((m) => m.client_email === email)
+
+  const unreadFrom = (email) =>
+    messages.filter((m) => m.client_email === email && m.sender === 'client' && !m.read_by_practitioner).length
+
+  const handleSendMessage = async (client, body) => {
+    setMsgSending(true)
+    setError('')
+    const res = await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ submission_id: client.id, client_email: client.email, body })
+    })
+    setMsgSending(false)
+    if (!res.ok) {
+      setError('Could not send the message.')
+      return
+    }
+    const res2 = await fetch('/api/messages', { headers: { 'x-admin-password': password } })
+    if (res2.ok) {
+      const d = await res2.json()
+      setMessages(d.messages || [])
+    }
+  }
+
+  const markMessagesRead = async (email) => {
+    await fetch('/api/messages', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ client_email: email })
+    })
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.client_email === email && m.sender === 'client' ? { ...m, read_by_practitioner: true } : m
+      )
+    )
+  }
+
   const clientPrescriptions = (submissionId) =>
     prescriptions.filter((rx) => rx.submission_id === submissionId)
 
@@ -321,6 +416,18 @@ export default function Admin() {
         >
           Inventory ({stock.length}){stock.some((x) => x.is_low) ? ' ⚠' : ''}
         </button>
+        <button
+          onClick={() => setTab('vlog')}
+          className={`pb-3 text-sm font-mono ${tab === 'vlog' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
+        >
+          Vlog ({vlogPosts.length})
+        </button>
+        <button
+          onClick={() => setTab('research')}
+          className={`pb-3 text-sm font-mono ${tab === 'research' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
+        >
+          Research
+        </button>
       </div>
 
       {error && <p className="mb-6 text-sm text-ochre bg-ochre/10 rounded-md px-3 py-2">{error}</p>}
@@ -369,6 +476,13 @@ export default function Admin() {
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-ink/60">
               Showing {filteredSubmissions.length} of {submissions.length}
+              <button
+                onClick={() => load(password)}
+                disabled={loading}
+                className="ml-3 text-xs text-moss hover:text-ochre disabled:opacity-50"
+              >
+                {loading ? 'Refreshing…' : 'Refresh'}
+              </button>
             </p>
             <button onClick={() => handleExport('submissions')} className="bg-ochre text-linen px-5 py-2.5 rounded text-sm">
               Export {conditionFilter === 'all' && sexFilter === 'all' ? 'all' : 'filtered'} to CSV
@@ -381,15 +495,26 @@ export default function Admin() {
               <div key={s.id} className="bg-cream border border-moss/10 rounded-lg">
                 <button
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
-                  onClick={() => setOpenId(openId === s.id ? null : s.id)}
+                  onClick={() => {
+                    const opening = openId !== s.id
+                    setOpenId(opening ? s.id : null)
+                    if (opening && unreadFrom(s.email) > 0) markMessagesRead(s.email)
+                  }}
                 >
                   <div>
                     <p className="text-sm text-ink">{s.first_name} {s.surname}</p>
                     <p className="font-mono text-xs text-ink/50">{new Date(s.created_at).toLocaleString()}</p>
                   </div>
-                  {s.status === 'flagged' && (
-                    <span className="font-mono text-xs text-ochre bg-ochre/10 px-2 py-1 rounded">flagged</span>
-                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {unreadFrom(s.email) > 0 && (
+                      <span className="font-mono text-xs text-linen bg-ochre px-2 py-1 rounded">
+                        {unreadFrom(s.email)} new
+                      </span>
+                    )}
+                    {s.status === 'flagged' && (
+                      <span className="font-mono text-xs text-ochre bg-ochre/10 px-2 py-1 rounded">flagged</span>
+                    )}
+                  </div>
                 </button>
 
                 {openId === s.id && (
@@ -616,6 +741,17 @@ export default function Admin() {
                         />
                       )}
                     </div>
+
+                    <div className="mt-6 pt-5 border-t border-moss/10">
+                      <p className="font-mono text-xs tracking-widest text-moss/60 mb-3">MESSAGES</p>
+                      <MessageThread
+                        messages={clientMessages(s.email)}
+                        viewerRole="practitioner"
+                        sending={msgSending}
+                        onSend={(body) => handleSendMessage(s, body)}
+                        placeholder={`Message ${s.first_name || 'this client'}…`}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -627,11 +763,23 @@ export default function Admin() {
       {tab === 'newclient' && (
         <ClientIntake
           clinicMode
-          onComplete={async () => {
-            await load(password)
-            setTab('submissions')
-          }}
+          onSaved={() => load(password)}
+          onComplete={() => setTab('submissions')}
         />
+      )}
+
+      {tab === 'vlog' && (
+        <VlogPanel
+          posts={vlogPosts}
+          saving={vlogSaving}
+          onSave={handleVlogSave}
+          onUpdate={handleVlogUpdate}
+          onDelete={handleVlogDelete}
+        />
+      )}
+
+      {tab === 'research' && (
+        <ResearchPanel password={password} clients={submissions} />
       )}
 
       {tab === 'inventory' && (
