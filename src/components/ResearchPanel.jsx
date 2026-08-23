@@ -2,10 +2,36 @@ import { useState, useRef, useEffect } from 'react'
 
 const SUGGESTIONS = [
   'What should I consider when combining milk thistle with a client on statins?',
+  'Recent evidence on peppermint oil for IBS?',
   'Herbs traditionally used for sluggish digestion with low-grade anxiety?',
-  'Summarise the key points from this client\u2019s history before their follow-up',
   'What cautions apply to liquorice root in someone with high blood pressure?'
 ]
+
+function PaperList({ papers, searchQuery, searchedAt }) {
+  if (!papers?.length) return null
+  return (
+    <div className="mt-3 pt-3 border-t border-moss/10">
+      <p className="font-mono text-[10px] tracking-wide text-moss/50 mb-2">
+        LITERATURE FOUND · Europe PMC · searched {new Date(searchedAt).toLocaleDateString()}
+        {searchQuery ? ` · "${searchQuery}"` : ''}
+      </p>
+      <ol className="space-y-1.5">
+        {papers.map((p, i) => (
+          <li key={i} className="text-xs text-ink/70">
+            <span className="text-ochre font-mono">[{i + 1}]</span>{' '}
+            {p.url ? (
+              <a href={p.url} target="_blank" rel="noopener noreferrer" className="hover:text-ochre underline underline-offset-2">
+                {p.title}
+              </a>
+            ) : p.title}
+            <span className="text-ink/50"> — {p.journal}, {p.year}</span>
+            {p.isOpenAccess && <span className="text-sage"> · free full text</span>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
 
 export default function ResearchPanel({ password, clients }) {
   const [messages, setMessages] = useState([])
@@ -13,6 +39,7 @@ export default function ResearchPanel({ password, clients }) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [contextClientId, setContextClientId] = useState('')
+  const [searchLit, setSearchLit] = useState(true)
   const endRef = useRef(null)
 
   useEffect(() => {
@@ -23,7 +50,7 @@ export default function ResearchPanel({ password, clients }) {
     if (!contextClientId) return null
     const c = clients.find((x) => x.id === contextClientId)
     if (!c) return null
-    const lines = [
+    return [
       `Name: ${c.first_name || ''} ${c.surname || ''}`.trim(),
       c.dob ? `DOB: ${c.dob}` : null,
       c.sex ? `Sex: ${c.sex}` : null,
@@ -43,8 +70,7 @@ export default function ResearchPanel({ password, clients }) {
       c.menopause_status ? `Menopause: ${c.menopause_status}` : null,
       (c.menopause_symptoms || []).length ? `Menopause symptoms: ${(c.menopause_symptoms || []).join(', ')}` : null,
       c.women_pregnant ? 'Currently pregnant' : null
-    ].filter(Boolean)
-    return lines.join('\n')
+    ].filter(Boolean).join('\n')
   }
 
   const send = async (text) => {
@@ -61,7 +87,11 @@ export default function ResearchPanel({ password, clients }) {
       const res = await fetch('/api/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-        body: JSON.stringify({ messages: next, client_context: buildClientContext() })
+        body: JSON.stringify({
+          messages: next.map(({ role, content }) => ({ role, content })),
+          client_context: buildClientContext(),
+          search_literature: searchLit
+        })
       })
       const data = await res.json()
       if (!res.ok) {
@@ -69,8 +99,14 @@ export default function ResearchPanel({ password, clients }) {
         setSending(false)
         return
       }
-      setMessages([...next, { role: 'assistant', content: data.reply }])
-    } catch (err) {
+      setMessages([...next, {
+        role: 'assistant',
+        content: data.reply,
+        papers: data.papers,
+        searchQuery: data.searchQuery,
+        searchedAt: data.searchedAt
+      }])
+    } catch {
       setError('Could not reach the assistant. Check your connection.')
     }
     setSending(false)
@@ -81,10 +117,11 @@ export default function ResearchPanel({ password, clients }) {
       <div className="bg-cream border border-moss/10 rounded-lg px-4 py-3 mb-4 text-sm text-ink/70">
         <span className="font-mono text-xs tracking-wide text-ochre">FOR YOUR USE ONLY — </span>
         A research aid to help you think things through. It doesn't make clinical decisions, and clients
-        never see it. Always verify interactions against your NIMH resource.
+        never see it. Where possible it searches current published literature and shows you exactly what
+        it found. Always verify interactions against your NIMH resource.
       </div>
 
-      <div className="mb-4">
+      <div className="grid sm:grid-cols-2 gap-4 mb-4">
         <label className="block">
           <span className="font-mono text-xs tracking-wide text-moss/70">DISCUSS A SPECIFIC CLIENT (OPTIONAL)</span>
           <select
@@ -94,18 +131,24 @@ export default function ResearchPanel({ password, clients }) {
           >
             <option value="">No client selected</option>
             {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.first_name} {c.surname}
-              </option>
+              <option key={c.id} value={c.id}>{c.first_name} {c.surname}</option>
             ))}
           </select>
         </label>
-        {contextClientId && (
-          <p className="text-xs text-ink/50 italic mt-1">
-            Their health history will be included so you don't have to retype it.
-          </p>
-        )}
+
+        <label className="flex items-end pb-2">
+          <span className="flex items-center gap-2 text-sm text-ink/80">
+            <input type="checkbox" checked={searchLit} onChange={(e) => setSearchLit(e.target.checked)} />
+            Search published literature
+          </span>
+        </label>
       </div>
+
+      {contextClientId && (
+        <p className="text-xs text-ink/50 italic mb-4 -mt-2">
+          Their health history will be included so you don't have to retype it.
+        </p>
+      )}
 
       {messages.length === 0 && (
         <div className="mb-4">
@@ -131,13 +174,18 @@ export default function ResearchPanel({ password, clients }) {
               m.role === 'user' ? 'bg-moss text-linen' : 'bg-cream border border-moss/10 text-ink'
             }`}>
               <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+              {m.role === 'assistant' && (
+                <PaperList papers={m.papers} searchQuery={m.searchQuery} searchedAt={m.searchedAt} />
+              )}
             </div>
           </div>
         ))}
         {sending && (
           <div className="flex justify-start">
             <div className="bg-cream border border-moss/10 rounded-lg px-4 py-2.5">
-              <p className="text-sm text-ink/50 italic">Thinking…</p>
+              <p className="text-sm text-ink/50 italic">
+                {searchLit ? 'Searching literature and thinking…' : 'Thinking…'}
+              </p>
             </div>
           </div>
         )}
@@ -166,10 +214,14 @@ export default function ResearchPanel({ password, clients }) {
         </button>
       </form>
 
+      <p className="mt-3 text-xs text-ink/40">
+        Literature via Europe PMC. For UK safety alerts see the MHRA; for clinical guidelines, NICE.
+      </p>
+
       {messages.length > 0 && (
         <button
           onClick={() => { setMessages([]); setError('') }}
-          className="mt-3 text-xs text-moss hover:text-ochre"
+          className="mt-2 text-xs text-moss hover:text-ochre"
         >
           Start a new conversation
         </button>
