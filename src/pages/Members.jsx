@@ -173,7 +173,14 @@ export default function Members() {
       </div>
 
       <div className="mt-8">
-        <p className="font-mono text-xs tracking-widest text-ochre mb-3">MESSAGES</p>
+        <p className="font-mono text-xs tracking-widest text-ochre mb-3">
+          MESSAGES
+          {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length > 0 && (
+            <span className="ml-2 bg-ochre text-linen px-2 py-0.5 rounded-full text-[10px]">
+              {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length} new
+            </span>
+          )}
+        </p>
         <div className="bg-cream border border-moss/10 rounded-lg p-5">
           <MessageThread
             messages={messages}

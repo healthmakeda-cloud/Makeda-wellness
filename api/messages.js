@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail, messageNotificationEmail } from './_send-email.js'
 
 export default async function handler(req, res) {
   const password = req.headers['x-admin-password']
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
 
   // ---- Send a message as the practitioner ----
   if (req.method === 'POST') {
-    const { submission_id, client_email, body } = req.body || {}
+    const { submission_id, client_email, body, notify = true } = req.body || {}
     if (!client_email || !body?.trim()) {
       res.status(400).json({ error: 'Missing client email or message body' })
       return
@@ -49,7 +50,27 @@ export default async function handler(req, res) {
       res.status(500).json({ error: error.message })
       return
     }
-    res.status(200).json({ message: data })
+
+    // Let the client know there's something waiting. The message itself
+    // stays inside their secure account — the email is only a nudge.
+    let emailSent = false
+    if (notify) {
+      let firstName = null
+      if (submission_id) {
+        const { data: client } = await supabase
+          .from('intake_submissions')
+          .select('first_name')
+          .eq('id', submission_id)
+          .single()
+        firstName = client?.first_name || null
+      }
+
+      const { subject, html, text } = messageNotificationEmail({ firstName })
+      const result = await sendEmail({ to: client_email, subject, html, text })
+      emailSent = result.ok
+    }
+
+    res.status(200).json({ message: data, emailSent })
     return
   }
 

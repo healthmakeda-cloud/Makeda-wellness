@@ -283,6 +283,19 @@ export default function ClientIntake({ clinicMode = false, onComplete = null, on
     setSubmitted(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (onSaved) onSaved()
+
+    // Send the acknowledgement email. Deliberately not awaited and errors
+    // are swallowed — the form has already saved, and a failed email must
+    // never make the client think otherwise.
+    fetch('/api/send-intake-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        firstName: form.firstName,
+        hasFlags: anyFlags.length > 0
+      })
+    }).catch(() => {})
   }
 
   if (submitted) {
