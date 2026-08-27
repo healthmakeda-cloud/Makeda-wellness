@@ -60,6 +60,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [openId, setOpenId] = useState(null)
+  const [openMessagesId, setOpenMessagesId] = useState(null)
   const [conditionFilter, setConditionFilter] = useState('all')
   const [sexFilter, setSexFilter] = useState('all')
   const [prescriptions, setPrescriptions] = useState([])
@@ -495,11 +496,7 @@ export default function Admin() {
               <div key={s.id} className="bg-cream border border-moss/10 rounded-lg">
                 <button
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
-                  onClick={() => {
-                    const opening = openId !== s.id
-                    setOpenId(opening ? s.id : null)
-                    if (opening && unreadFrom(s.email) > 0) markMessagesRead(s.email)
-                  }}
+                  onClick={() => setOpenId(openId === s.id ? null : s.id)}
                 >
                   <div>
                     <p className="text-sm text-ink">{s.first_name} {s.surname}</p>
@@ -743,14 +740,35 @@ export default function Admin() {
                     </div>
 
                     <div className="mt-6 pt-5 border-t border-moss/10">
-                      <p className="font-mono text-xs tracking-widest text-moss/60 mb-3">MESSAGES</p>
-                      <MessageThread
-                        messages={clientMessages(s.email)}
-                        viewerRole="practitioner"
-                        sending={msgSending}
-                        onSend={(body) => handleSendMessage(s, body)}
-                        placeholder={`Message ${s.first_name || 'this client'}…`}
-                      />
+                      <button
+                        onClick={() => {
+                          const opening = openMessagesId !== s.id
+                          setOpenMessagesId(opening ? s.id : null)
+                          if (opening && unreadFrom(s.email) > 0) markMessagesRead(s.email)
+                        }}
+                        className="w-full flex items-center justify-between mb-3"
+                      >
+                        <span className="font-mono text-xs tracking-widest text-moss/60">
+                          MESSAGES {clientMessages(s.email).length > 0 && `(${clientMessages(s.email).length})`}
+                        </span>
+                        <span className="flex items-center gap-2">
+                          {unreadFrom(s.email) > 0 && (
+                            <span className="font-mono text-[10px] text-linen bg-ochre px-2 py-0.5 rounded">
+                              {unreadFrom(s.email)} new
+                            </span>
+                          )}
+                          <span className={`text-ochre font-mono text-xs transition-transform ${openMessagesId === s.id ? 'rotate-180' : ''}`}>▾</span>
+                        </span>
+                      </button>
+                      {openMessagesId === s.id && (
+                        <MessageThread
+                          messages={clientMessages(s.email)}
+                          viewerRole="practitioner"
+                          sending={msgSending}
+                          onSend={(body) => handleSendMessage(s, body)}
+                          placeholder={`Message ${s.first_name || 'this client'}…`}
+                        />
+                      )}
                     </div>
                   </div>
                 )}

@@ -36,7 +36,25 @@ export default function Members() {
         .from('messages')
         .select('*')
         .order('created_at', { ascending: true })
-        .then(({ data }) => setMessages(data || []))
+        .then(({ data }) => {
+          setMessages(data || [])
+          // They're looking at the page right now, so anything from Makéda
+          // counts as seen — mark it read so the badge doesn't linger.
+          const unread = (data || []).filter((m) => m.sender === 'practitioner' && !m.read_by_client)
+          if (unread.length > 0) {
+            supabase
+              .from('messages')
+              .update({ read_by_client: true })
+              .eq('client_email', session.user.email)
+              .eq('sender', 'practitioner')
+              .eq('read_by_client', false)
+              .then(() => {
+                setMessages((prev) =>
+                  prev.map((m) => (m.sender === 'practitioner' ? { ...m, read_by_client: true } : m))
+                )
+              })
+          }
+        })
 
       supabase
         .from('prescriptions')
