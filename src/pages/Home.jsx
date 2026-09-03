@@ -47,14 +47,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 pb-16 grid md:grid-cols-2 gap-8 items-center">
-        <div className="flex justify-center">
-          <img
-            src="/icons/icon-512.png"
-            alt="Makéda's Health mark"
-            className="h-40 w-40 sm:h-48 sm:w-48 rounded-xl"
-          />
-        </div>
+      <section className="max-w-2xl mx-auto px-6 pb-16">
         <MakedaMethodModule />
       </section>
 
