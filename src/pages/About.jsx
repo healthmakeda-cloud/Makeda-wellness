@@ -25,7 +25,7 @@ export default function About() {
             hydrotherapy sessions, herbal prescriptions and guided cleanse programmes.
           </p>
         </div>
-        <ImagePlaceholder className="aspect-[3/4]" label="Portrait coming soon" variant="root" />
+        <img src="/images/makeda-portrait.jpg" alt="Makéda Hemans" className="w-full aspect-[3/4] object-cover rounded-xl" />
       </div>
 
       <RootDivider />

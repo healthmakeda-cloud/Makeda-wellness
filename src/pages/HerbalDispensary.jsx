@@ -35,7 +35,7 @@ export default function HerbalDispensary() {
           </div>
         </div>
         <img
-          src="/images/herbal-medicine.jpeg"
+          src="/images/herbal-dispensary-hero.jpg"
           alt="Herbal dispensary bottles and dried herbs"
           className="w-full aspect-square object-cover rounded-xl"
         />
