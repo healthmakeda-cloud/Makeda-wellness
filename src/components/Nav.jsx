@@ -20,7 +20,7 @@ export default function Nav() {
     <header className="sticky top-0 z-40 bg-linen/95 backdrop-blur border-b border-moss/10">
       <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         <NavLink to="/" className="flex items-center" onClick={() => setOpen(false)}>
-          <img src="/images/logo-full.jpg" alt="Makéda's Health" className="h-14 w-auto rounded" />
+          <img src="/images/logo-circle.png" alt="Makéda's Health" className="h-14 w-14 rounded-full" />
         </NavLink>
 
         <nav className="hidden md:flex items-center gap-8">

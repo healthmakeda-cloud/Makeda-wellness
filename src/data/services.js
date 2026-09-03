@@ -42,7 +42,8 @@ export const services = [
       "The Mind Reset System is a 90-day programme exploring the connection between nervous system stress and gut health — the same link that sits behind so much of Makéda's own approach to digestion and wellbeing.",
       "Makéda works alongside this programme as an affiliate practitioner. [Full programme structure and what's included to be confirmed — please provide the official programme details so this page accurately reflects it.]"
     ],
-    cta: { label: 'Enquire about Mind Reset', to: '/contact' }
+    cta: { label: 'Enquire about Mind Reset', to: '/contact' },
+    secondaryLink: { label: 'Watch the 2024 Conference replay', to: 'https://www.tonydada.com/scec-replays' }
     // ⚠️ Once Makéda sends the real affiliate link, replace the line above with:
     // cta: { label: 'Join the Mind Reset programme', to: 'https://the-real-affiliate-url' }
     // ServiceDetail.jsx already detects a full URL automatically and opens it

@@ -48,9 +48,13 @@ export default async function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host}`)
   const condition = url.searchParams.get('condition')
   const sex = url.searchParams.get('sex')
+  const dateFrom = url.searchParams.get('date_from')
+  const dateTo = url.searchParams.get('date_to')
 
   let query = supabase.from('intake_submissions').select('*')
   if (sex === 'F' || sex === 'M') query = query.eq('sex', sex)
+  if (dateFrom) query = query.gte('created_at', dateFrom)
+  if (dateTo) query = query.lte('created_at', `${dateTo}T23:59:59`)
   if (condition === 'flagged') {
     query = query.eq('status', 'flagged')
   } else if (condition && columns.includes(condition)) {

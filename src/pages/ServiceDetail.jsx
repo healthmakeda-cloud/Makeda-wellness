@@ -53,6 +53,19 @@ export default function ServiceDetail() {
           {service.cta.label}
         </Link>
       )}
+
+      {service.secondaryLink && (
+        <div className="mt-4">
+          <a
+            href={service.secondaryLink.to}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-ochre underline underline-offset-2 hover:text-moss transition-colors"
+          >
+            {service.secondaryLink.label} ↗
+          </a>
+        </div>
+      )}
     </div>
   )
 }

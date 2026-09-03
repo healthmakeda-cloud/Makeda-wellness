@@ -63,6 +63,9 @@ export default function Admin() {
   const [openMessagesId, setOpenMessagesId] = useState(null)
   const [conditionFilter, setConditionFilter] = useState('all')
   const [sexFilter, setSexFilter] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [notesSaving, setNotesSaving] = useState(false)
   const [prescriptions, setPrescriptions] = useState([])
   const [rxClient, setRxClient] = useState(null)
   const [rxEditing, setRxEditing] = useState(null)
@@ -120,12 +123,14 @@ export default function Admin() {
   const filteredSubmissions = useMemo(() => {
     return submissions.filter((s) => {
       if (sexFilter !== 'all' && s.sex !== sexFilter) return false
+      if (dateFrom && s.created_at < dateFrom) return false
+      if (dateTo && s.created_at > `${dateTo}T23:59:59`) return false
       if (conditionFilter === 'all') return true
       if (conditionFilter === 'flagged') return s.status === 'flagged'
       const val = s[conditionFilter]
       return val && String(val).trim() !== ''
     })
-  }, [submissions, conditionFilter, sexFilter])
+  }, [submissions, conditionFilter, sexFilter, dateFrom, dateTo])
 
   const reloadPrescriptions = async () => {
     const res = await fetch('/api/prescriptions', { headers: { 'x-admin-password': password } })
@@ -290,6 +295,22 @@ export default function Admin() {
     await reloadVlog()
   }
 
+  const saveClinicalNotes = async (id, notes) => {
+    setNotesSaving(true)
+    setError('')
+    const res = await fetch('/api/submissions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ id, clinical_notes: notes })
+    })
+    setNotesSaving(false)
+    if (!res.ok) {
+      setError('Could not save clinical notes.')
+      return
+    }
+    setSubmissions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, clinical_notes: notes } : sub)))
+  }
+
   const clientMessages = (email) => messages.filter((m) => m.client_email === email)
 
   const unreadFrom = (email) =>
@@ -336,6 +357,8 @@ export default function Admin() {
     if (kind === 'submissions') {
       if (conditionFilter !== 'all') params.set('condition', conditionFilter)
       if (sexFilter !== 'all') params.set('sex', sexFilter)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
     }
     const base = kind === 'orders' ? '/api/export-orders' : '/api/export'
     const url = params.toString() ? `${base}?${params}` : base
@@ -470,6 +493,32 @@ export default function Admin() {
                     {o.l}
                   </button>
                 ))}
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">FILTER BY DATE SUBMITTED</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="text-xs rounded-md border border-moss/20 bg-linen px-2 py-1.5 text-ink"
+                />
+                <span className="text-xs text-ink/50">to</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="text-xs rounded-md border border-moss/20 bg-linen px-2 py-1.5 text-ink"
+                />
+                {(dateFrom || dateTo) && (
+                  <button
+                    onClick={() => { setDateFrom(''); setDateTo('') }}
+                    className="text-xs text-ochre hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -616,6 +665,24 @@ export default function Admin() {
                         />
                       </div>
                     )}
+
+                    <div className="mt-6 pt-5 border-t border-moss/10">
+                      <p className="font-mono text-xs tracking-widest text-moss/60 mb-2">CLINICAL NOTES</p>
+                      <p className="text-xs text-ink/50 italic mb-2">
+                        An ongoing note for this client, separate from any single prescription — saves when you click away.
+                      </p>
+                      <textarea
+                        rows={3}
+                        defaultValue={s.clinical_notes || ''}
+                        placeholder="General notes about this client's treatment over time…"
+                        className="w-full rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                        onBlur={(e) => {
+                          if (e.target.value !== (s.clinical_notes || '')) {
+                            saveClinicalNotes(s.id, e.target.value)
+                          }
+                        }}
+                      />
+                    </div>
 
                     <div className="mt-6 pt-5 border-t border-moss/10">
                       <div className="flex items-center justify-between mb-3">
@@ -781,6 +848,7 @@ export default function Admin() {
       {tab === 'newclient' && (
         <ClientIntake
           clinicMode
+          adminPassword={password}
           onSaved={() => load(password)}
           onComplete={() => setTab('submissions')}
         />

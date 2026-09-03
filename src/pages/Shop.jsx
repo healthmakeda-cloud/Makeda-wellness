@@ -57,17 +57,23 @@ export default function Shop() {
                   <h3 className="font-display text-lg text-moss mb-2">{p.name}</h3>
                   <p className="text-sm text-ink/70 flex-1">{p.description}</p>
                   <div className="flex items-center justify-between mt-5">
-                    <span className="font-mono text-sm text-ochre">
-                      £{(p.priceGBP / 100).toFixed(0)}
-                      {p.priceIsPlaceholder && <span className="text-[10px] text-ink/40 ml-1">(price TBC)</span>}
-                    </span>
-                    <button
-                      onClick={() => handleBuy(p.id)}
-                      disabled={loadingId === p.id}
-                      className="bg-moss text-linen px-4 py-2 rounded text-sm disabled:opacity-50"
-                    >
-                      {loadingId === p.id ? 'Redirecting…' : 'Buy now'}
-                    </button>
+                    {p.availableAfterConsultation ? (
+                      <span className="font-mono text-sm text-ochre italic">Available after consultation only</span>
+                    ) : (
+                      <>
+                        <span className="font-mono text-sm text-ochre">
+                          £{(p.priceGBP / 100).toFixed(0)}
+                          {p.priceIsPlaceholder && <span className="text-[10px] text-ink/40 ml-1">(price TBC)</span>}
+                        </span>
+                        <button
+                          onClick={() => handleBuy(p.id)}
+                          disabled={loadingId === p.id}
+                          className="bg-moss text-linen px-4 py-2 rounded text-sm disabled:opacity-50"
+                        >
+                          {loadingId === p.id ? 'Redirecting…' : 'Buy now'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

@@ -183,33 +183,6 @@ export default function Members() {
 
       <RootDivider />
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="bg-linen border border-moss/10 rounded-lg p-5 text-center">
-          <p className="font-display text-moss mb-1">Chat with Makéda's AI</p>
-          <p className="text-xs text-ink/50">Coming soon</p>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <p className="font-mono text-xs tracking-widest text-ochre mb-3">
-          MESSAGES
-          {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length > 0 && (
-            <span className="ml-2 bg-ochre text-linen px-2 py-0.5 rounded-full text-[10px]">
-              {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length} new
-            </span>
-          )}
-        </p>
-        <div className="bg-cream border border-moss/10 rounded-lg p-5">
-          <MessageThread
-            messages={messages}
-            viewerRole="client"
-            sending={msgSending}
-            onSend={handleSendMessage}
-            placeholder="Ask Makéda a question…"
-          />
-        </div>
-      </div>
-
       <div className="mt-8">
         <p className="font-mono text-xs tracking-widest text-ochre mb-3">YOUR PRESCRIPTIONS</p>
         {prescriptions.length === 0 ? (
@@ -250,6 +223,26 @@ export default function Members() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="mt-8">
+        <p className="font-mono text-xs tracking-widest text-ochre mb-3">
+          MESSAGES
+          {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length > 0 && (
+            <span className="ml-2 bg-ochre text-linen px-2 py-0.5 rounded-full text-[10px]">
+              {messages.filter((m) => m.sender === 'practitioner' && !m.read_by_client).length} new
+            </span>
+          )}
+        </p>
+        <div className="bg-cream border border-moss/10 rounded-lg p-5">
+          <MessageThread
+            messages={messages}
+            viewerRole="client"
+            sending={msgSending}
+            onSend={handleSendMessage}
+            placeholder="Ask Makéda a question…"
+          />
+        </div>
       </div>
     </div>
   )

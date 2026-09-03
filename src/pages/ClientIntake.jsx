@@ -145,7 +145,7 @@ function RatingScale({ label, lowLabel, highLabel, value, onChange }) {
   )
 }
 
-export default function ClientIntake({ clinicMode = false, onComplete = null, onSaved = null }) {
+export default function ClientIntake({ clinicMode = false, onComplete = null, onSaved = null, adminPassword = null }) {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(initialForm)
   const [submitted, setSubmitted] = useState(false)
@@ -227,13 +227,12 @@ export default function ClientIntake({ clinicMode = false, onComplete = null, on
     e.preventDefault()
     setError('')
 
-    if (!supabase) {
+    if (!clinicMode && !supabase) {
       setError('The form cannot be submitted yet — the site is not connected to a database. Please contact the clinic directly.')
       return
     }
 
-    setSubmitting(true)
-    const { error: insertError } = await supabase.from('intake_submissions').insert({
+    const payload = {
       first_name: form.firstName, surname: form.surname, dob: form.dob || null, sex: form.sex,
       address: form.address, postcode: form.postcode, email: form.email, mobile: form.mobile, landline: form.landline,
       gp_name: form.gpName, gp_tel: form.gpTel, gp_address: form.gpAddress, gp_postcode: form.gpPostcode,
@@ -269,7 +268,36 @@ export default function ClientIntake({ clinicMode = false, onComplete = null, on
       signed_date: form.signedDate || null,
       services_interested: form.servicesInterested,
       status: anyFlags.length > 0 ? 'flagged' : 'new'
-    })
+    }
+
+    setSubmitting(true)
+    let insertError = null
+
+    if (clinicMode) {
+      // Makéda filling this in with a client — goes through the secure
+      // server route (gated by the admin password) so it never depends on
+      // whatever Supabase session happens to be active in her browser.
+      try {
+        const res = await fetch('/api/submit-intake', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          insertError = new Error(data.error || 'Save failed')
+        }
+      } catch (err) {
+        insertError = err
+      }
+    } else {
+      // The client submitting their own form. If they happen to be signed
+      // into Members at the same time, the database only allows this to
+      // succeed when the email here matches their own signed-in email.
+      const result = await supabase.from('intake_submissions').insert(payload)
+      insertError = result.error
+    }
+
     setSubmitting(false)
 
     if (insertError) {

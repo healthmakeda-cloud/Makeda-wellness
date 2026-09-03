@@ -13,6 +13,10 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Unknown product' })
     return
   }
+  if (product.availableAfterConsultation || !product.priceGBP) {
+    res.status(400).json({ error: 'This product is only available after a consultation.' })
+    return
+  }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
   const origin = `https://${req.headers.host}`
