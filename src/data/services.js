@@ -9,7 +9,7 @@ export const services = [
     page: '/colon-hydrotherapy',
     onHome: true,
     shortCopy: 'A gentle, ARCH-registered approach to clearing and resetting the gut, often the starting point for a wider health picture.',
-    image: '/images/colon-hydrotherapy.jpg',
+    image: '/images/colon-hydrotherapy-room.jpg',
     fullDescription: [
       'Colon hydrotherapy uses the gentle introduction of filtered water to soften and clear the colon, often used to relieve bloating and sluggish digestion, and frequently the starting point for a wider cleanse or treatment plan.',
       'Every session is ARCH-registered practice, using single-use, disposable equipment throughout. Before your first session, a short health history helps rule out anything that would make treatment unsuitable.'

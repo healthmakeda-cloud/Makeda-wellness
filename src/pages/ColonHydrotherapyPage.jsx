@@ -31,18 +31,11 @@ export default function ColonHydrotherapyPage() {
             </Link>
           </div>
         </div>
-        <div className="relative">
-          <img
-            src="/images/colon-hydrotherapy-room.jpg"
-            alt="Colon hydrotherapy treatment room"
-            className="w-full aspect-square object-cover rounded-xl"
-          />
-          <img
-            src="/images/logo-circle.png"
-            alt="Makéda's Health"
-            className="absolute -bottom-4 -right-4 h-16 w-16 rounded-full shadow-md"
-          />
-        </div>
+        <img
+          src="/images/colon-hydrotherapy.jpg"
+          alt="Colon hydrotherapy treatment"
+          className="w-full aspect-square object-cover rounded-xl"
+        />
       </section>
 
       <div className="max-w-6xl mx-auto px-6">
