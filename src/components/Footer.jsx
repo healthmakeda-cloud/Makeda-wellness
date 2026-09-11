@@ -50,7 +50,16 @@ export default function Footer() {
           </a>
           <ul className="space-y-1 text-sm text-linen/80">
             {locations.map((loc) => (
-              <li key={loc.name}>{loc.name} — {loc.area}</li>
+              <li key={loc.name}>
+                <a
+                  href={loc.bookingUrl || '/contact'}
+                  target={loc.bookingUrl ? '_blank' : undefined}
+                  rel={loc.bookingUrl ? 'noopener noreferrer' : undefined}
+                  className="hover:text-amber transition-colors"
+                >
+                  {loc.name} — {loc.area}
+                </a>
+              </li>
             ))}
           </ul>
         </div>

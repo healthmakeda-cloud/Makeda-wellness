@@ -1,4 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import BackButton from '../components/BackButton.jsx'
 import RootDivider from '../components/RootDivider.jsx'
 
 const features = [
@@ -9,12 +10,10 @@ const features = [
 ]
 
 export default function HerbalDispensary() {
-  const navigate = useNavigate()
   return (
-    <div>
-      <button onClick={() => navigate(-1)} className="font-mono text-xs tracking-widest text-ochre hover:text-moss transition-colors mb-4 block">
-        ← BACK
-      </button>
+    <>
+      <BackButton />
+      <div>
       <section className="max-w-6xl mx-auto px-6 pt-16 pb-10 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <p className="font-mono text-xs tracking-widest text-ochre mb-4">HERBAL DISPENSARY</p>
@@ -88,5 +87,6 @@ export default function HerbalDispensary() {
         </div>
       </section>
     </div>
+    </>
   )
 }

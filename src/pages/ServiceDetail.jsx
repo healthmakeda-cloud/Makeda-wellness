@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getServiceBySlug } from '../data/services.js'
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
 import RootDivider from '../components/RootDivider.jsx'
+import BackButton from '../components/BackButton.jsx'
 import NotFound from './NotFound.jsx'
 
 export default function ServiceDetail() {
@@ -11,10 +12,10 @@ export default function ServiceDetail() {
   if (!service) return <NotFound />
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      <Link to="/services" className="font-mono text-xs tracking-widest text-ochre">← ALL SERVICES</Link>
-
-      {service.image ? (
+    <>
+      <BackButton />
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        {service.image ? (
         <img
           src={service.image}
           alt={service.title}
@@ -67,5 +68,6 @@ export default function ServiceDetail() {
         </div>
       )}
     </div>
+    </>
   )
 }

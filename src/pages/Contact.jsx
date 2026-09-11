@@ -30,6 +30,8 @@ export default function Contact() {
               <div className="text-sm text-ink/70 space-y-1 flex-1">
                 <p><span className="font-mono text-xs text-moss/60">HOURS</span><br />{loc.hours}</p>
                 <p className="pt-2"><span className="font-mono text-xs text-moss/60">BOOKING</span><br />{loc.booking}</p>
+                {loc.phone && <p className="pt-2"><span className="font-mono text-xs text-moss/60">PHONE</span><br /><a href={`tel:${loc.phone}`} className="hover:text-ochre">{loc.phone}</a></p>}
+                {loc.email && <p className="pt-2"><span className="font-mono text-xs text-moss/60">EMAIL</span><br /><a href={`mailto:${loc.email}`} className="hover:text-ochre">{loc.email}</a></p>}
                 {loc.onlineNote && <p className="pt-1 text-ochre">{loc.onlineNote}</p>}
               </div>
 
