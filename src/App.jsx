@@ -9,6 +9,7 @@ import HerbalDispensary from './pages/HerbalDispensary.jsx'
 import ColonHydrotherapyPage from './pages/ColonHydrotherapyPage.jsx'
 import Method from './pages/Method.jsx'
 import ClientIntake from './pages/ClientIntake.jsx'
+import BaldwinsIntake from './pages/BaldwinsIntake.jsx'
 import Shop from './pages/Shop.jsx'
 import ShopSuccess from './pages/ShopSuccess.jsx'
 import Contact from './pages/Contact.jsx'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="/client-intake" element={<ClientIntake />} />
+          <Route path="/baldwins-intake" element={<BaldwinsIntake />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/success" element={<ShopSuccess />} />
           <Route path="/contact" element={<Contact />} />
