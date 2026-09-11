@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient.js'
 import MedicineSelector from '../components/MedicineSelector.jsx'
 
-// A deliberately short form for Baldwin's & Co, which offers herbal
-// medicine only — no colon hydrotherapy, no bowel/diet/women's/men's
-// sections needed there. Covers just what Makéda asked for: name,
-// medicines, health story, and nervous system — plus basic contact
-// details, since the wider system (Members sign-in, messaging) relies
-// on having an email for each client.
+// The shortened form for Baldwin's & Co, which offers herbal medicine
+// only. Lives inside the back office as its own tab — Makéda fills it in
+// with the client present, same pattern as the full "+ New client form."
+// Submits through the same secure server route (gated by the admin
+// password), so it never touches client-side database policies.
 
 const inputClass = 'w-full rounded-md border border-moss/20 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ochre'
 
@@ -46,17 +44,17 @@ function RatingScale({ label, lowLabel, highLabel, value, onChange }) {
   )
 }
 
-const initialForm = {
+const emptyForm = {
   firstName: '', surname: '', email: '', mobile: '',
   descriptionOfAilment: '',
   medicationsSelected: [], medicationsOther: '', medicationsOtherChecked: false,
-  nervousSystemGate: '', nervousSystemNotes: '',
+  nervousSystemNotes: '',
   stressLevel: 5, happinessLevel: 5, peacefulnessLevel: 5,
   consentGiven: false, signature: '', signedDate: new Date().toISOString().slice(0, 10)
 }
 
-export default function BaldwinsIntake() {
-  const [form, setForm] = useState(initialForm)
+export default function BaldwinsIntake({ adminPassword, onSaved, onComplete }) {
+  const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -70,17 +68,18 @@ export default function BaldwinsIntake() {
         : [...f.medicationsSelected, item]
     }))
 
+  const startFresh = () => {
+    setForm(emptyForm)
+    setSubmitted(false)
+    setError('')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
-    if (!supabase) {
-      setError('The form cannot be submitted yet — please contact the clinic directly.')
-      return
-    }
-
     setSubmitting(true)
-    const { error: insertError } = await supabase.from('intake_submissions').insert({
+
+    const payload = {
       first_name: form.firstName,
       surname: form.surname,
       email: form.email,
@@ -97,40 +96,61 @@ export default function BaldwinsIntake() {
       signed_date: form.signedDate || null,
       services_interested: ['Herbal Medicine'],
       status: 'new'
-    })
-    setSubmitting(false)
+    }
 
-    if (insertError) {
-      console.error('Baldwin\'s intake submission failed:', insertError)
-      setError('There was a problem saving your form. Please try again or contact the clinic directly.')
+    try {
+      const res = await fetch('/api/submit-intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify(payload)
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'There was a problem saving this form. Please try again.')
+        setSubmitting(false)
+        return
+      }
+    } catch {
+      setError('Could not reach the server. Please check your connection and try again.')
+      setSubmitting(false)
       return
     }
+
+    setSubmitting(false)
     setSubmitted(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (onSaved) onSaved()
   }
 
   if (submitted) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-24 text-center">
-        <h1 className="font-display text-3xl text-moss mb-4">Thank you, {form.firstName || 'there'}.</h1>
-        <p className="text-ink/70">
-          Your form has been received. Makéda will review it ahead of your visit.
+      <div className="bg-cream border border-moss/10 rounded-lg p-8 text-center">
+        <h2 className="font-display text-2xl text-moss mb-3">
+          Saved for {form.firstName} {form.surname}
+        </h2>
+        <p className="text-ink/70 text-sm mb-6">
+          Their record is now in Intake submissions.
         </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <button onClick={startFresh} className="bg-moss text-linen px-6 py-3 rounded text-sm">
+            Start a form for the next client
+          </button>
+          {onComplete && (
+            <button onClick={() => { startFresh(); onComplete() }} className="border border-moss text-moss px-6 py-3 rounded text-sm">
+              Done
+            </button>
+          )}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-16">
-      <p className="font-mono text-xs tracking-widest text-ochre mb-4">BALDWIN'S & CO</p>
-      <h1 className="font-display text-3xl text-moss mb-2">Quick health form</h1>
-      <p className="text-ink/70 mb-6 text-sm">
-        A shorter version of our health journey form, for herbal medicine consultations at Baldwin's & Co.
-      </p>
-
-      <div className="bg-cream border border-moss/10 rounded-lg px-4 py-3 mb-8 text-sm text-ink/80">
-        <span className="font-mono text-xs tracking-wide text-ochre">CONFIDENTIAL — </span>
-        Everything you share here is held in strict confidence and is only ever seen by Makéda and authorised clinic staff.
+    <div>
+      <div className="mb-6">
+        <h2 className="font-display text-xl text-moss">Baldwin's & Co — quick health form</h2>
+        <p className="text-sm text-ink/60">
+          A shorter form for herbal medicine consultations at Baldwin's — complete with the client present.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -188,7 +208,7 @@ export default function BaldwinsIntake() {
         {error && <p className="text-sm text-ochre bg-ochre/10 rounded-md px-3 py-2">{error}</p>}
 
         <button type="submit" disabled={submitting} className="bg-moss text-linen px-8 py-3 rounded text-sm disabled:opacity-50">
-          {submitting ? 'Submitting…' : 'Submit form'}
+          {submitting ? 'Saving…' : 'Save form'}
         </button>
       </form>
     </div>

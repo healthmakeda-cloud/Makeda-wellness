@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import PrescriptionForm from '../components/PrescriptionForm.jsx'
 import InventoryPanel from '../components/InventoryPanel.jsx'
 import ClientIntake from './ClientIntake.jsx'
+import BaldwinsIntake from './BaldwinsIntake.jsx'
 import MessageThread from '../components/MessageThread.jsx'
 import VlogPanel from '../components/VlogPanel.jsx'
 import ResearchPanel from '../components/ResearchPanel.jsx'
@@ -421,6 +422,12 @@ export default function Admin() {
           className={`pb-3 text-sm font-mono ${tab === 'newclient' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
         >
           + New client form
+        </button>
+        <button
+          onClick={() => setTab('baldwins')}
+          className={`pb-3 text-sm font-mono ${tab === 'baldwins' ? 'text-ochre border-b-2 border-ochre' : 'text-moss/50'}`}
+        >
+          + Baldwin's quick form
         </button>
         <button
           onClick={() => setTab('submissions')}
@@ -848,6 +855,14 @@ export default function Admin() {
       {tab === 'newclient' && (
         <ClientIntake
           clinicMode
+          adminPassword={password}
+          onSaved={() => load(password)}
+          onComplete={() => setTab('submissions')}
+        />
+      )}
+
+      {tab === 'baldwins' && (
+        <BaldwinsIntake
           adminPassword={password}
           onSaved={() => load(password)}
           onComplete={() => setTab('submissions')}
