@@ -52,9 +52,7 @@ export default function Footer() {
             {locations.map((loc) => (
               <li key={loc.name}>
                 <a
-                  href={loc.bookingUrl || '/contact'}
-                  target={loc.bookingUrl ? '_blank' : undefined}
-                  rel={loc.bookingUrl ? 'noopener noreferrer' : undefined}
+                  href="/contact"
                   className="hover:text-amber transition-colors"
                 >
                   {loc.name} — {loc.area}
