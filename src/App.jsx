@@ -12,6 +12,7 @@ import ClientIntake from './pages/ClientIntake.jsx'
 import Shop from './pages/Shop.jsx'
 import ShopSuccess from './pages/ShopSuccess.jsx'
 import Contact from './pages/Contact.jsx'
+import Connect from './pages/Connect.jsx'
 import Members from './pages/Members.jsx'
 import Vlog from './pages/Vlog.jsx'
 import Admin from './pages/Admin.jsx'
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/success" element={<ShopSuccess />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/connect" element={<Connect />} />
           <Route path="/members" element={<Members />} />
           <Route path="/vlog" element={<Vlog />} />
           <Route path="/admin" element={<Admin />} />
