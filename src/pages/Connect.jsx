@@ -1,22 +1,48 @@
 import { Link } from 'react-router-dom'
 import { socialLinks } from '../data/socialLinks.js'
 import SocialIcon from '../components/SocialIcon.jsx'
+import MakedaMethodModule from '../components/MakedaMethodModule.jsx'
+import RootDivider from '../components/RootDivider.jsx'
 
-// A standalone "link in bio" style landing page — the destination for
-// Makéda's social media profile links. Deliberately short and mobile-first,
-// since that's how almost everyone will arrive here.
+// A standalone "link in bio" style landing page for social media traffic —
+// a short version of the Home page's opening, plus the Method module,
+// followed by the quick action buttons and social links.
 export default function Connect() {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-6 py-16 bg-linen">
-      <div className="max-w-sm w-full text-center">
+    <div>
+      <section className="max-w-6xl mx-auto px-6 pt-16 pb-10 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <img
+            src="/images/logo-circle.png"
+            alt="Makéda's Health"
+            className="h-16 w-16 rounded-full mb-6"
+          />
+          <p className="font-mono text-xs tracking-widest text-ochre mb-4">MEDICAL HERBALIST · COLON HYDROTHERAPIST</p>
+          <h1 className="font-display text-3xl md:text-4xl text-moss leading-tight">
+            The gut is the root.
+            <br />Everything else grows from it.
+          </h1>
+          <p className="mt-6 text-ink/80 max-w-md italic">
+            The Makéda Method™ helps people tell their health story — personalised,
+            evidence-informed, whole-person care.
+          </p>
+        </div>
         <img
-          src="/images/logo-circle.png"
-          alt="Makéda's Health"
-          className="h-24 w-24 rounded-full mx-auto mb-5"
+          src="/images/connect-hero.jpg"
+          alt="Makéda Hemans with a client during a herbal medicine consultation"
+          className="w-full aspect-[4/3] object-cover object-top rounded-xl"
         />
-        <h1 className="font-display text-2xl text-moss mb-1">Makéda Health</h1>
-        <p className="text-ochre italic text-sm mb-8">Rooted in nature. Restoring balance.</p>
+      </section>
 
+      <div className="max-w-2xl mx-auto px-6 pb-10">
+        <MakedaMethodModule />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6">
+        <RootDivider />
+      </div>
+
+      <section className="max-w-sm mx-auto px-6 py-10 text-center">
         <Link
           to="/client-intake"
           className="block bg-moss text-linen px-6 py-4 rounded-xl font-body text-sm mb-3 hover:bg-ink transition-colors"
@@ -41,7 +67,7 @@ export default function Connect() {
             <SocialIcon key={s.label} label={s.label} href={s.href} path={s.path} size="lg" />
           ))}
         </div>
-      </div>
+      </section>
     </div>
   )
 }
