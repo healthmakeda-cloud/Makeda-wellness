@@ -95,6 +95,7 @@ export default function BaldwinsIntake({ adminPassword, onSaved, onComplete }) {
       signature: form.signature,
       signed_date: form.signedDate || null,
       services_interested: ['Herbal Medicine'],
+      form_type: 'BAL',
       status: 'new'
     }
 

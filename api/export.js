@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
 const columns = [
-  'created_at', 'first_name', 'surname', 'dob', 'sex', 'address', 'postcode',
+  'reference', 'created_at', 'first_name', 'surname', 'dob', 'sex', 'address', 'postcode',
   'email', 'mobile', 'landline',
   'gp_name', 'gp_tel', 'gp_address', 'gp_postcode', 'gp_contact_consent',
   'description_of_ailment', 'existing_or_new',
   'medications_selected', 'medications_other', 'surgeries_last_3_months',
-  'services_interested',
+  'services_interested', 'colonics_session_count',
   'respiratory_notes',
   'cardiovascular_notes', 'cardiovascular_flags',
   'genitourinary_notes', 'genitourinary_flags',

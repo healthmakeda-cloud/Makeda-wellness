@@ -14,6 +14,10 @@ export default function Members() {
   const [prescriptions, setPrescriptions] = useState([])
   const [messages, setMessages] = useState([])
   const [msgSending, setMsgSending] = useState(false)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({ firstName: '', surname: '', mobile: '' })
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [profileError, setProfileError] = useState('')
 
   useEffect(() => {
     if (!supabase) {
@@ -66,7 +70,16 @@ export default function Members() {
         .from('intake_submissions')
         .select('*')
         .order('created_at', { ascending: false })
-        .then(({ data }) => setSubmissions(data || []))
+        .then(({ data }) => {
+          setSubmissions(data || [])
+          if (data && data[0]) {
+            setProfileForm({
+              firstName: data[0].first_name || '',
+              surname: data[0].surname || '',
+              mobile: data[0].mobile || ''
+            })
+          }
+        })
     }
   }, [session])
 
@@ -107,6 +120,33 @@ export default function Members() {
         .order('created_at', { ascending: true })
       setMessages(data || [])
     }
+  }
+
+  const handleSaveProfile = async () => {
+    if (!supabase || !latest) return
+    setProfileSaving(true)
+    setProfileError('')
+    const { error } = await supabase
+      .from('intake_submissions')
+      .update({
+        first_name: profileForm.firstName,
+        surname: profileForm.surname,
+        mobile: profileForm.mobile
+      })
+      .eq('id', latest.id)
+    setProfileSaving(false)
+    if (error) {
+      setProfileError('Could not save your details. Please try again.')
+      return
+    }
+    setSubmissions((prev) =>
+      prev.map((s) =>
+        s.id === latest.id
+          ? { ...s, first_name: profileForm.firstName, surname: profileForm.surname, mobile: profileForm.mobile }
+          : s
+      )
+    )
+    setEditingProfile(false)
   }
 
   const handleSignOut = async () => {
@@ -169,10 +209,68 @@ export default function Members() {
 
       {latest ? (
         <div className="bg-cream border border-moss/10 rounded-lg p-5 space-y-2 text-sm text-ink/80">
-          <p className="font-mono text-xs text-ochre">YOUR HEALTH JOURNEY</p>
-          <p>Submitted {new Date(latest.created_at).toLocaleDateString()}</p>
-          <p>Reason for visit: {latest.description_of_ailment || '—'}</p>
-          <p>Consent on file: {latest.consent_given ? 'Yes' : 'Not yet completed'}</p>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-ochre">YOUR DETAILS</p>
+            {!editingProfile && (
+              <button onClick={() => setEditingProfile(true)} className="text-xs text-moss hover:text-ochre">
+                Edit
+              </button>
+            )}
+          </div>
+
+          {editingProfile ? (
+            <div className="space-y-3 pt-1">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="font-mono text-[10px] text-moss/60">FIRST NAME</span>
+                  <input
+                    className="w-full mt-1 rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                    value={profileForm.firstName}
+                    onChange={(e) => setProfileForm((f) => ({ ...f, firstName: e.target.value }))}
+                  />
+                </label>
+                <label className="block">
+                  <span className="font-mono text-[10px] text-moss/60">SURNAME</span>
+                  <input
+                    className="w-full mt-1 rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                    value={profileForm.surname}
+                    onChange={(e) => setProfileForm((f) => ({ ...f, surname: e.target.value }))}
+                  />
+                </label>
+              </div>
+              <label className="block">
+                <span className="font-mono text-[10px] text-moss/60">MOBILE</span>
+                <input
+                  className="w-full mt-1 rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                  value={profileForm.mobile}
+                  onChange={(e) => setProfileForm((f) => ({ ...f, mobile: e.target.value }))}
+                />
+              </label>
+              <p className="text-xs text-ink/50 italic">
+                To change the email address on your account, please message Makéda below rather than editing it here —
+                it's tied to how you sign in.
+              </p>
+              {profileError && <p className="text-xs text-ochre">{profileError}</p>}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={profileSaving}
+                  className="bg-moss text-linen px-4 py-2 rounded text-xs disabled:opacity-50"
+                >
+                  {profileSaving ? 'Saving…' : 'Save'}
+                </button>
+                <button onClick={() => setEditingProfile(false)} className="text-xs text-moss/70 hover:text-moss">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p>{latest.first_name} {latest.surname}</p>
+              <p>{latest.email}</p>
+              <p>{latest.mobile || 'No mobile number on file'}</p>
+            </>
+          )}
         </div>
       ) : (
         <p className="text-sm text-ink/60">
@@ -182,6 +280,15 @@ export default function Members() {
       )}
 
       <RootDivider />
+
+      {latest && (
+        <div className="bg-cream border border-moss/10 rounded-lg p-5 space-y-2 text-sm text-ink/80">
+          <p className="font-mono text-xs text-ochre">YOUR HEALTH JOURNEY</p>
+          <p>Submitted {new Date(latest.created_at).toLocaleDateString()}</p>
+          <p>Reason for visit: {latest.description_of_ailment || '—'}</p>
+          <p>Consent on file: {latest.consent_given ? 'Yes' : 'Not yet completed'}</p>
+        </div>
+      )}
 
       <div className="mt-8">
         <p className="font-mono text-xs tracking-widest text-ochre mb-3">YOUR PRESCRIPTIONS</p>

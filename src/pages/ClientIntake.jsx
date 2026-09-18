@@ -40,6 +40,7 @@ const initialForm = {
   dietVegetarianVegan: false, dietFoodCravings: false, dietFoodCravingsDetail: '',
   dietDailyFluidIntake: '', dietEatingDisorder: false,
   consentGiven: false, chConsentGiven: false, signature: '', signatureImage: '', signedDate: '',
+  colonicsSessionCount: '', colonicsSessionCountCustom: '',
   servicesInterested: []
 }
 
@@ -266,6 +267,8 @@ export default function ClientIntake({ clinicMode = false, onComplete = null, on
       consent_given: form.consentGiven, ch_consent_given: form.chConsentGiven,
       signature: form.signature, signature_image: form.signatureImage,
       signed_date: form.signedDate || null,
+      colonics_session_count: form.colonicsSessionCount === 'Custom' ? form.colonicsSessionCountCustom : form.colonicsSessionCount,
+      form_type: 'MH',
       services_interested: form.servicesInterested,
       status: anyFlags.length > 0 ? 'flagged' : 'new'
     }
@@ -671,6 +674,37 @@ export default function ClientIntake({ clinicMode = false, onComplete = null, on
                     minutes. Mild cramping or light-headedness afterwards is normal and usually passes quickly.
                   </p>
                 </div>
+
+                <div>
+                  <p className="font-mono text-xs tracking-wide text-moss/70 mb-2">HOW MANY SESSIONS WOULD YOU LIKE TO BOOK?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['1', '3', '6', 'Custom'].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => update('colonicsSessionCount', opt)}
+                        className={`px-4 py-2 rounded text-sm transition-colors ${
+                          form.colonicsSessionCount === opt
+                            ? 'bg-ochre text-linen'
+                            : 'bg-cream border border-moss/20 text-ink/70 hover:border-ochre'
+                        }`}
+                      >
+                        {opt === 'Custom' ? 'Custom' : `${opt} session${opt === '1' ? '' : 's'}`}
+                      </button>
+                    ))}
+                  </div>
+                  {form.colonicsSessionCount === 'Custom' && (
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="Number of sessions"
+                      className={`${inputClass} mt-3 max-w-[200px]`}
+                      value={form.colonicsSessionCountCustom}
+                      onChange={(e) => update('colonicsSessionCountCustom', e.target.value)}
+                    />
+                  )}
+                </div>
+
                 <label className="flex items-start gap-3 text-sm text-ink/80">
                   <input
                     required

@@ -40,6 +40,51 @@ function Section({ title, children }) {
   )
 }
 
+// A running, dated log rather than a single field — each entry keeps its
+// own timestamp, so the history of notes over time is visible, not just
+// the latest edit.
+function ClinicalNotesLog({ entries, onAdd, saving }) {
+  const [draft, setDraft] = useState('')
+  const sorted = (entries || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+
+  return (
+    <div>
+      {sorted.length === 0 ? (
+        <p className="text-sm text-ink/50 italic mb-3">No notes yet.</p>
+      ) : (
+        <div className="space-y-2 mb-3 max-h-64 overflow-y-auto pr-1">
+          {sorted.map((entry, i) => (
+            <div key={i} className="bg-linen border border-moss/10 rounded-md p-3">
+              <p className="font-mono text-[10px] text-ochre mb-1">
+                {new Date(entry.date).toLocaleString(undefined, {
+                  day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                })}
+              </p>
+              <p className="text-sm text-ink/80 whitespace-pre-wrap">{entry.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <textarea
+          rows={2}
+          value={draft}
+          placeholder="Add a dated note…"
+          className="flex-1 rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre resize-none"
+          onChange={(e) => setDraft(e.target.value)}
+        />
+        <button
+          onClick={() => { if (draft.trim()) { onAdd(draft); setDraft('') } }}
+          disabled={saving || !draft.trim()}
+          className="bg-moss text-linen px-4 rounded text-sm disabled:opacity-50 flex-shrink-0"
+        >
+          {saving ? '…' : 'Add'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const CONDITION_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'flagged', label: 'Flagged only' },
@@ -66,6 +111,11 @@ export default function Admin() {
   const [sexFilter, setSexFilter] = useState('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [listCollapsed, setListCollapsed] = useState(false)
+  const [editingContactId, setEditingContactId] = useState(null)
+  const [contactForm, setContactForm] = useState({ firstName: '', surname: '', email: '', mobile: '' })
+  const [contactSaving, setContactSaving] = useState(false)
   const [notesSaving, setNotesSaving] = useState(false)
   const [prescriptions, setPrescriptions] = useState([])
   const [rxClient, setRxClient] = useState(null)
@@ -126,12 +176,17 @@ export default function Admin() {
       if (sexFilter !== 'all' && s.sex !== sexFilter) return false
       if (dateFrom && s.created_at < dateFrom) return false
       if (dateTo && s.created_at > `${dateTo}T23:59:59`) return false
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase()
+        const fullName = `${s.first_name || ''} ${s.surname || ''}`.toLowerCase()
+        if (!fullName.includes(q)) return false
+      }
       if (conditionFilter === 'all') return true
       if (conditionFilter === 'flagged') return s.status === 'flagged'
       const val = s[conditionFilter]
       return val && String(val).trim() !== ''
     })
-  }, [submissions, conditionFilter, sexFilter, dateFrom, dateTo])
+  }, [submissions, conditionFilter, sexFilter, dateFrom, dateTo, searchQuery])
 
   const reloadPrescriptions = async () => {
     const res = await fetch('/api/prescriptions', { headers: { 'x-admin-password': password } })
@@ -296,20 +351,50 @@ export default function Admin() {
     await reloadVlog()
   }
 
-  const saveClinicalNotes = async (id, notes) => {
+  const addClinicalNote = async (id, text) => {
+    if (!text?.trim()) return
     setNotesSaving(true)
     setError('')
     const res = await fetch('/api/submissions', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
-      body: JSON.stringify({ id, clinical_notes: notes })
+      body: JSON.stringify({ id, add_note: text.trim() })
     })
     setNotesSaving(false)
     if (!res.ok) {
-      setError('Could not save clinical notes.')
+      setError('Could not save the note.')
       return
     }
-    setSubmissions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, clinical_notes: notes } : sub)))
+    const data = await res.json()
+    setSubmissions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, clinical_notes_log: data.notes } : sub)))
+  }
+
+  const saveContactDetails = async (id, contact) => {
+    setError('')
+    const res = await fetch('/api/submissions', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ id, contact })
+    })
+    if (!res.ok) {
+      setError('Could not save contact details.')
+      return false
+    }
+    setSubmissions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, ...contact } : sub)))
+    return true
+  }
+
+  const deleteSubmission = async (id, name) => {
+    if (!window.confirm(`Delete ${name || 'this client'}'s record permanently? This cannot be undone, and will remove their intake history.`)) return
+    const res = await fetch(`/api/submissions?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': password }
+    })
+    if (!res.ok) {
+      setError('Could not delete this client.')
+      return
+    }
+    setSubmissions((prev) => prev.filter((sub) => sub.id !== id))
   }
 
   const clientMessages = (email) => messages.filter((m) => m.client_email === email)
@@ -467,6 +552,16 @@ export default function Admin() {
         <div>
           <div className="bg-cream border border-moss/10 rounded-lg p-4 mb-6 space-y-3">
             <div>
+              <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">SEARCH BY NAME</p>
+              <input
+                type="text"
+                placeholder="Search clients…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm rounded-md border border-moss/20 bg-linen px-3 py-2 text-ink outline-none focus:border-ochre"
+              />
+            </div>
+            <div>
               <p className="font-mono text-xs tracking-wide text-moss/60 mb-2">FILTER BY CONDITION</p>
               <div className="flex flex-wrap gap-1.5">
                 {CONDITION_FILTERS.map((f) => (
@@ -540,12 +635,19 @@ export default function Admin() {
               >
                 {loading ? 'Refreshing…' : 'Refresh'}
               </button>
+              <button
+                onClick={() => setListCollapsed((v) => !v)}
+                className="ml-3 text-xs text-moss hover:text-ochre"
+              >
+                {listCollapsed ? 'Show list ▾' : 'Hide list ▴'}
+              </button>
             </p>
             <button onClick={() => handleExport('submissions')} className="bg-ochre text-linen px-5 py-2.5 rounded text-sm">
               Export {conditionFilter === 'all' && sexFilter === 'all' ? 'all' : 'filtered'} to CSV
             </button>
           </div>
 
+          {!listCollapsed && (
           <div className="space-y-3">
             {filteredSubmissions.length === 0 && <p className="text-sm text-ink/60">No submissions match these filters.</p>}
             {filteredSubmissions.map((s) => (
@@ -555,7 +657,10 @@ export default function Admin() {
                   onClick={() => setOpenId(openId === s.id ? null : s.id)}
                 >
                   <div>
-                    <p className="text-sm text-ink">{s.first_name} {s.surname}</p>
+                    <p className="text-sm text-ink">
+                      {s.first_name} {s.surname}
+                      {s.reference && <span className="ml-2 font-mono text-[10px] text-ochre">{s.reference}</span>}
+                    </p>
                     <p className="font-mono text-xs text-ink/50">{new Date(s.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -572,16 +677,111 @@ export default function Admin() {
 
                 {openId === s.id && (
                   <div className="px-5 pb-5 space-y-1 border-t border-moss/10 pt-4">
-                    <Section title="CONTACT">
-                      <Row label="NAME" value={`${s.first_name || ''} ${s.surname || ''}`.trim()} />
-                      <Row label="DOB" value={s.dob} />
-                      <Row label="SEX" value={s.sex} />
-                      <Row label="ADDRESS" value={s.address} />
-                      <Row label="POSTCODE" value={s.postcode} />
-                      <Row label="EMAIL" value={s.email} />
-                      <Row label="MOBILE" value={s.mobile} />
-                      <Row label="LANDLINE" value={s.landline} />
-                    </Section>
+                    <div className="flex items-center justify-between mt-0 mb-2">
+                      <p className="font-mono text-xs tracking-widest text-moss/60">CONTACT</p>
+                      <div className="flex gap-3">
+                        {editingContactId !== s.id && (
+                          <button
+                            onClick={() => {
+                              setEditingContactId(s.id)
+                              setContactForm({
+                                firstName: s.first_name || '',
+                                surname: s.surname || '',
+                                email: s.email || '',
+                                mobile: s.mobile || ''
+                              })
+                            }}
+                            className="text-xs text-moss hover:text-ochre"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteSubmission(s.id, `${s.first_name} ${s.surname}`)}
+                          className="text-xs text-ochre/70 hover:text-ochre"
+                        >
+                          Delete client
+                        </button>
+                      </div>
+                    </div>
+
+                    {editingContactId === s.id ? (
+                      <div className="bg-linen border border-moss/10 rounded-md p-3 space-y-3 mb-3">
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <label className="block">
+                            <span className="font-mono text-[10px] text-moss/60">FIRST NAME</span>
+                            <input
+                              className="w-full mt-1 rounded-md border border-moss/20 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                              value={contactForm.firstName}
+                              onChange={(e) => setContactForm((f) => ({ ...f, firstName: e.target.value }))}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="font-mono text-[10px] text-moss/60">SURNAME</span>
+                            <input
+                              className="w-full mt-1 rounded-md border border-moss/20 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                              value={contactForm.surname}
+                              onChange={(e) => setContactForm((f) => ({ ...f, surname: e.target.value }))}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="font-mono text-[10px] text-moss/60">EMAIL</span>
+                            <input
+                              type="email"
+                              className="w-full mt-1 rounded-md border border-moss/20 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                              value={contactForm.email}
+                              onChange={(e) => setContactForm((f) => ({ ...f, email: e.target.value }))}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="font-mono text-[10px] text-moss/60">MOBILE</span>
+                            <input
+                              className="w-full mt-1 rounded-md border border-moss/20 bg-cream px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
+                              value={contactForm.mobile}
+                              onChange={(e) => setContactForm((f) => ({ ...f, mobile: e.target.value }))}
+                            />
+                          </label>
+                        </div>
+                        {contactForm.email !== s.email && (
+                          <p className="text-xs text-ochre">
+                            Changing the email will also update it on this client's messages and prescriptions, so nothing gets disconnected.
+                          </p>
+                        )}
+                        <div className="flex gap-3">
+                          <button
+                            disabled={contactSaving}
+                            onClick={async () => {
+                              setContactSaving(true)
+                              const ok = await saveContactDetails(s.id, {
+                                first_name: contactForm.firstName,
+                                surname: contactForm.surname,
+                                email: contactForm.email,
+                                mobile: contactForm.mobile
+                              })
+                              setContactSaving(false)
+                              if (ok) setEditingContactId(null)
+                            }}
+                            className="bg-moss text-linen px-4 py-2 rounded text-xs disabled:opacity-50"
+                          >
+                            {contactSaving ? 'Saving…' : 'Save'}
+                          </button>
+                          <button onClick={() => setEditingContactId(null)} className="text-xs text-moss/70 hover:text-moss">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Row label="NAME" value={`${s.first_name || ''} ${s.surname || ''}`.trim()} />
+                        <Row label="DOB" value={s.dob} />
+                        <Row label="SEX" value={s.sex} />
+                        <Row label="ADDRESS" value={s.address} />
+                        <Row label="POSTCODE" value={s.postcode} />
+                        <Row label="EMAIL" value={s.email} />
+                        <Row label="MOBILE" value={s.mobile} />
+                        <Row label="LANDLINE" value={s.landline} />
+                      </>
+                    )}
 
                     <Section title="GP">
                       <Row label="GP NAME" value={s.gp_name} />
@@ -658,6 +858,7 @@ export default function Admin() {
                     <Section title="CONSENT">
                       <Row label="CONSENT GIVEN" value={s.consent_given} />
                       <Row label="COLON HYDROTHERAPY CONSENT" value={s.ch_consent_given} />
+                      <Row label="COLONICS SESSIONS REQUESTED" value={s.colonics_session_count} />
                       <Row label="SIGNED BY" value={s.signature} />
                       <Row label="SIGNED DATE" value={s.signed_date} />
                     </Section>
@@ -676,18 +877,12 @@ export default function Admin() {
                     <div className="mt-6 pt-5 border-t border-moss/10">
                       <p className="font-mono text-xs tracking-widest text-moss/60 mb-2">CLINICAL NOTES</p>
                       <p className="text-xs text-ink/50 italic mb-2">
-                        An ongoing note for this client, separate from any single prescription — saves when you click away.
+                        An ongoing, dated log for this client, separate from any single prescription.
                       </p>
-                      <textarea
-                        rows={3}
-                        defaultValue={s.clinical_notes || ''}
-                        placeholder="General notes about this client's treatment over time…"
-                        className="w-full rounded-md border border-moss/20 bg-linen px-3 py-2 text-sm text-ink outline-none focus:border-ochre"
-                        onBlur={(e) => {
-                          if (e.target.value !== (s.clinical_notes || '')) {
-                            saveClinicalNotes(s.id, e.target.value)
-                          }
-                        }}
+                      <ClinicalNotesLog
+                        entries={s.clinical_notes_log}
+                        saving={notesSaving}
+                        onAdd={(text) => addClinicalNote(s.id, text)}
                       />
                     </div>
 
@@ -849,6 +1044,7 @@ export default function Admin() {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 

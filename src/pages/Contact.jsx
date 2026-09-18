@@ -16,11 +16,18 @@ export default function Contact() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {locations.map((loc) => (
           <div key={loc.name} className="bg-cream border border-moss/10 rounded-xl overflow-hidden flex flex-col">
-            {loc.image ? (
-              <img src={loc.image} alt={loc.name} className="w-full aspect-[4/3] object-cover" />
-            ) : (
-              <ImagePlaceholder className="aspect-[4/3]" label="Photo coming soon" tone="linen" variant={loc.variant} />
-            )}
+            <div className="relative">
+              {loc.image ? (
+                <img src={loc.image} alt={loc.name} className="w-full aspect-[4/3] object-cover" />
+              ) : (
+                <ImagePlaceholder className="aspect-[4/3]" label="Photo coming soon" tone="linen" variant={loc.variant} />
+              )}
+              {loc.logo && (
+                <div className="absolute top-3 left-3 bg-linen rounded-md px-2 py-1.5 shadow-sm">
+                  <img src={loc.logo} alt={`${loc.name} logo`} className="h-6 w-auto object-contain" />
+                </div>
+              )}
+            </div>
             <div className="p-5 flex flex-col flex-1">
               <h2 className="font-display text-lg text-moss">{loc.name}</h2>
               <p className="text-xs font-mono text-ochre mb-3">{loc.area.toUpperCase()}</p>
