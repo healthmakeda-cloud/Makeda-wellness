@@ -35,7 +35,7 @@ export default function ColonHydrotherapyPage() {
           </div>
         </div>
         <img
-          src="/images/colon-hydrotherapy.jpg"
+          src="/images/colon-hydrotherapy-room.jpg"
           alt="Colon hydrotherapy treatment"
           className="w-full aspect-square object-cover rounded-xl"
         />

@@ -3,11 +3,7 @@ import RootDivider from '../components/RootDivider.jsx'
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx'
 import MakedaMethodModule from '../components/MakedaMethodModule.jsx'
 import { services } from '../data/services.js'
-
-const testimonials = [
-  { quote: 'Add a real client testimonial here from makedah.com.', name: 'Client, Camberwell' },
-  { quote: 'Add a second testimonial here — keep it short.', name: 'Client, Clapham' }
-]
+import { testimonials } from '../data/testimonials.js'
 
 export default function Home() {
   return (
@@ -68,7 +64,7 @@ export default function Home() {
                 <img
                   src={s.image}
                   alt={s.title}
-                  className="w-full aspect-[16/9] object-cover rounded-lg mb-4"
+                  className={`w-full aspect-[16/9] object-cover rounded-lg mb-4 ${s.imagePosition === 'top' ? 'object-top' : ''}`}
                 />
               ) : (
                 <ImagePlaceholder className="aspect-[16/9] mb-4" label="" tone="linen" variant="herb" />

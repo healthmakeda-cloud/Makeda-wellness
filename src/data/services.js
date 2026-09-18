@@ -23,6 +23,7 @@ export const services = [
     onHome: true,
     shortCopy: 'Most clinics begin with symptoms. The Makéda Method™ begins with your story.',
     image: '/images/mh-herbal-consultation.png',
+    imagePosition: 'top',
     fullDescription: [
       'Every healing journey begins with a story. Every personalised medicine begins with understanding it. Every health story is unique, and your herbal prescription should be too.',
       'Once your practitioner has carefully explored your health story and developed your personalised treatment plan, the next step is the Herbal Dispensary — where your bespoke natural medicine is expertly prepared.',

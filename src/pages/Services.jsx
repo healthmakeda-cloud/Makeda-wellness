@@ -20,7 +20,7 @@ export default function Services() {
             className="bg-cream border border-moss/10 rounded-xl overflow-hidden block hover:border-ochre/40 transition-colors flex flex-col"
           >
             {s.image ? (
-              <img src={s.image} alt={s.title} className="w-full aspect-[4/3] object-cover" />
+              <img src={s.image} alt={s.title} className={`w-full aspect-[4/3] object-cover ${s.imagePosition === 'top' ? 'object-top' : ''}`} />
             ) : (
               <ImagePlaceholder className="aspect-[4/3]" label="" tone="linen" variant={s.artVariant || 'herb'} />
             )}
